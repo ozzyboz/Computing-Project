@@ -1,9 +1,9 @@
 
 level_1 = [
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX   T   XXXXXXX",
-    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX    E    XXXXXX",
-    "XXXXXXXX   TXXXXXXXXXXXXXXXXXXXXXX   XXXXX    XXXX",
+    "X                                                X",
+    "X                                                X",
+    "X                                                X",
     "XXXXXXXX    XXXXXXXXXXXXXXXXXXXXX   XXXXXXX    XXX",
     "XXXXXXXX    XXXXXXXXXXXXXXXXXXXX   XXXXXXXXXT  XXX",
     "XXXXXXXX    XXXXXXXXXXXXXXXXXXX   XXXXXXXXX   XXXX",

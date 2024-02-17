@@ -18,10 +18,9 @@ pygame.display.set_icon(pygame_icon)
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.pos = pygame.math.Vector2(PLAYER_START_X, PLAYER_START_Y)
         self.image = pygame.transform.rotozoom(pygame.image.load('Images/player1.png').convert_alpha(), 0, PLAYER_SIZE)
         self.base_player_image = self.image
-        self.hitbox_rect = self.base_player_image.get_rect(center=self.pos)
+        self.hitbox_rect = self.base_player_image.get_rect(center=pygame.math.Vector2(PLAYER_START_X, PLAYER_START_Y))
         self.rect = self.hitbox_rect.copy()
         self.speed = PLAYER_SPEED
         self.velocity_x = 0
@@ -67,14 +66,10 @@ class Player(pygame.sprite.Sprite):
         self.hitbox_rect.x += self.velocity_x
         self.hitbox_rect.y += self.velocity_y
 
-        # self.pos += pygame.math.Vector2(self.velocity_x, self.velocity_y)
-        # self.hitbox_rect.center = self.pos
-        # self.rect.center = self.hitbox_rect.center
-
     def is_shooting(self):
         if self.shoot_cooldown == 0:
             self.shoot_cooldown = SHOOT_COOLDOWN
-            spawn_bullet_pos = self.pos + self.gun_barrel_offset.rotate(self.angle)
+            spawn_bullet_pos = self.rect.center + self.gun_barrel_offset.rotate(self.angle)
             self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle)
             bullet_group.add(self.bullet)
             # player_group.add(self.bullet)
@@ -242,8 +237,8 @@ def main():
                 pygame.quit()
                 exit()
 
-        pygame.draw.rect(window, 'red', player.hitbox_rect, width=2)
-        pygame.draw.rect(window, 'yellow', player.rect, width=2)
+        #pygame.draw.rect(window, 'red', player.hitbox_rect, width=2)
+        #pygame.draw.rect(window, 'yellow', player.rect, width=2)
 
         pygame.display.update()
         clock.tick(FPS)
