@@ -39,6 +39,7 @@ class Player(pygame.sprite.Sprite):
     def player_input(self):
         self.velocity_x = 0
         self.velocity_y = 0
+
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_w]:
@@ -60,11 +61,57 @@ class Player(pygame.sprite.Sprite):
         else:
             self.shoot = False
 
-    def move(self):
+
+    def move(self, collidable):
+        self.isCollided(collidable)
         self.rect.x += self.velocity_x
         self.rect.y += self.velocity_y
         self.hitbox_rect.x += self.velocity_x
         self.hitbox_rect.y += self.velocity_y
+
+
+    def isCollided(self, collidable):
+        # Find sprites in a group that intersect another sprite.
+        # spritecollide(sprite, group, dokill, collided = None)
+        # Intersection is determined by comparing the Sprite.rect attribute of each Sprite
+        # Find sprites in a group that intersect another sprite.
+        # spritecollide(sprite, group, dokill, collided = None)
+        # Intersection is determined by comparing the Sprite.rect attribute of each Spri
+        collision_list = pygame.sprite.spritecollide(self, collidable, False)
+
+        # if intersection with collidable object in collision_list ( horizontal x direction )
+        for collided_object in collision_list:
+            if ((self.hitbox_rect.left - self.velocity_x) < collided_object.rect.right or (self.hitbox_rect.right - self.velocity_x) > collided_object.rect.left):
+                self.velocity_x = 0
+            if ((self.hitbox_rect.bottom + self.velocity_y) < collided_object.rect.top or (self.hitbox_rect.top + self.velocity_y) < collided_object.rect.bottom):
+                self.velocity_y = 0
+
+            # if (self.rect.bottom <= collided_object.rect.top or self.rect.top >= collided_object.rect.bottom):
+            # if (self.velocity_x > 0):
+            #     # Update relative position
+            #     self.rect.right = collided_object.rect.left
+            #     self.hitbox_rect.right = collided_object.rect.left
+            #     self.velocity_x = 0
+            #
+            # elif (self.velocity_x < 0):
+            #     # Update relative position
+            #     self.rect.left = collided_object.rect.right
+            #     self.hitbox_rect.left = collided_object.rect.right
+            #     self.velocity_x = 0
+            #
+            # # Moving down
+            # if (self.velocity_y > 0):
+            #     # Update relative position
+            #     self.rect.bottom = collided_object.rect.top
+            #     self.hitbox_rect.bottom = collided_object.rect.top
+            #     self.velocity_y = 0
+            # # Moving up
+            # elif (self.velocity_y < 0):
+            #     # Update relative position
+            #     self.rect.top = collided_object.rect.bottom
+            #     self.hitbox_rect.top = collided_object.rect.bottom
+            #     self.velocity_y = 0
+
 
     def is_shooting(self):
         if self.shoot_cooldown == 0:
@@ -82,10 +129,10 @@ class Player(pygame.sprite.Sprite):
         self.hitbox_rect.x -= dx
         self.hitbox_rect.y -= dy
 
-    def update(self):
+    def update(self, collidable = pygame.sprite.Group()):
         self.player_rotation()
         self.player_input()
-        self.move()
+        self.move(collidable)
 
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
@@ -219,7 +266,7 @@ def main():
     while running:
 
         bullet_group.update()
-        player_group.update()
+        player_group.update(walls_group)
         walls_group.update()
 
         run_viewbox(player.rect.x, player.rect.y)
@@ -237,8 +284,8 @@ def main():
                 pygame.quit()
                 exit()
 
-        #pygame.draw.rect(window, 'red', player.hitbox_rect, width=2)
-        #pygame.draw.rect(window, 'yellow', player.rect, width=2)
+        pygame.draw.rect(window, 'red', player.hitbox_rect, width=2)
+        pygame.draw.rect(window, 'yellow', player.rect, width=2)
 
         pygame.display.update()
         clock.tick(FPS)
