@@ -172,7 +172,8 @@ class Bullet(pygame.sprite.Sprite):
         self.x_vel = math.cos(self.angle * (2 * math.pi / 360)) * self.speed
         self.y_vel = math.sin(self.angle * (2 * math.pi / 360)) * self.speed
 
-    def bullet_movement(self):
+    def bullet_movement(self, collidable):
+        self.isCollided(collidable)
         self.x += self.x_vel
         self.y += self.y_vel
 
@@ -182,8 +183,13 @@ class Bullet(pygame.sprite.Sprite):
         if pygame.time.get_ticks() - self.spawn_time > self.bullet_lifetime:
             self.kill()
 
-    def update(self):
-        self.bullet_movement()
+    def isCollided(self, collidable):
+        collision_list = pygame.sprite.spritecollide(self, collidable, False)
+        for collided_object in collision_list:
+            self.kill()
+
+    def update(self, collidable = pygame.sprite.Group()):
+        self.bullet_movement(collidable)
 
 
 class Wall(pygame.sprite.Sprite):
@@ -279,7 +285,7 @@ def main():
 
     while running:
 
-        bullet_group.update()
+        bullet_group.update(walls_group)
         player_group.update(walls_group)
         walls_group.update()
 
