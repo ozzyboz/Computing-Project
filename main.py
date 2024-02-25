@@ -81,9 +81,23 @@ class Player(pygame.sprite.Sprite):
 
         # if intersection with collidable object in collision_list ( horizontal x direction )
         for collided_object in collision_list:
-            if ((self.hitbox_rect.left - self.velocity_x) < collided_object.rect.right or (self.hitbox_rect.right - self.velocity_x) > collided_object.rect.left):
+            # if only moving left, ignore collisions to the top or bottom
+            if self.velocity_x != 0 and self.velocity_y == 0 and (self.hitbox_rect.top >= collided_object.rect.centery or self.hitbox_rect.bottom <= collided_object.rect.centery):
+                continue
+            if self.velocity_y != 0 and self.velocity_x == 0 and (self.hitbox_rect.left >= collided_object.rect.centerx or self.hitbox_rect.right <= collided_object.rect.centerx):
+                continue
+
+            # Moving Left
+            if self.velocity_x < 0 and self.hitbox_rect.left <= collided_object.rect.right and self.hitbox_rect.right >= collided_object.rect.right:
                 self.velocity_x = 0
-            if ((self.hitbox_rect.bottom + self.velocity_y) < collided_object.rect.top or (self.hitbox_rect.top + self.velocity_y) < collided_object.rect.bottom):
+            # Moving Up
+            if self.velocity_y < 0 and self.hitbox_rect.top <= collided_object.rect.bottom and self.hitbox_rect.bottom >= collided_object.rect.bottom:
+                self.velocity_y = 0
+            # Moving Right
+            if self.velocity_x > 0 and self.hitbox_rect.right >= collided_object.rect.left and self.hitbox_rect.left <= collided_object.rect.left:
+                self.velocity_x = 0
+            # Moving Down
+            if self.velocity_y > 0 and self.hitbox_rect.bottom >= collided_object.rect.top and self.hitbox_rect.top <= collided_object.rect.top:
                 self.velocity_y = 0
 
             # if (self.rect.bottom <= collided_object.rect.top or self.rect.top >= collided_object.rect.bottom):
