@@ -155,7 +155,7 @@ class Enemy(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.transform.rotozoom(pygame.image.load('Images/zombie_idle01.png').convert_alpha(), 0, PLAYER_SIZE)
         self.base_player_image = self.image
-        self.hitbox_rect = self.base_player_image.get_rect()
+        self.hitbox_rect = self.image.get_rect()
         self.rect = self.hitbox_rect.copy()
         self.health = 100
         dx = self.rect.x - pos_x
@@ -165,9 +165,21 @@ class Enemy(pygame.sprite.Sprite):
         self.hitbox_rect.x -= dx
         self.hitbox_rect.y -= dy
 
+    def enemy_rotation(self):
+        self.player_x = Player().rect.x
+        self.player_y = Player().rect.y
+        self.x_change_player = (self.player_x - self.hitbox_rect.centerx)
+        self.y_change_player = (self.player_y - self.hitbox_rect.centery)
+        self.angle = math.degrees(math.atan2(self.y_change_player, self.x_change_player))
+        self.image = pygame.transform.rotate(self.base_player_image, -self.angle)
+
+
     def shift_world(self, shift_x, shift_y):
         self.rect.x += shift_x
         self.rect.y += shift_y
+
+    def update(self):
+        self.enemy_rotation()
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -296,6 +308,7 @@ def setup_maze(current_level):
                 player.set_position(pos_x, pos_y)
             elif character == 'E':
                 enemies_group.add(Enemy(pos_x, pos_y))
+                logging.warning(len(enemies_group))
 
 
 
@@ -312,6 +325,7 @@ def main():
 
         bullet_group.update(walls_group)
         player_group.update(walls_group)
+        enemies_group.update()
         walls_group.update()
 
         run_viewbox(player.rect.x, player.rect.y)
