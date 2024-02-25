@@ -20,7 +20,7 @@ class Player(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.transform.rotozoom(pygame.image.load('Images/player1.png').convert_alpha(), 0, PLAYER_SIZE)
         self.base_player_image = self.image
-        self.hitbox_rect = self.base_player_image.get_rect(center=pygame.math.Vector2(PLAYER_START_X, PLAYER_START_Y))
+        self.hitbox_rect = self.base_player_image.get_rect()
         self.rect = self.hitbox_rect.copy()
         self.speed = PLAYER_SPEED
         self.velocity_x = 0
@@ -28,6 +28,12 @@ class Player(pygame.sprite.Sprite):
         self.shoot = False
         self.shoot_cooldown = 0
         self.gun_barrel_offset = pygame.math.Vector2(GUN_OFFSET_X, GUN_OFFSET_Y)
+
+    def set_position(self,x, y):
+        self.rect.x = x
+        self.rect.y = y
+        self.hitbox_rect.x = x
+        self.hitbox_rect.y = y
 
     def player_rotation(self):
         self.mouse_coords = pygame.mouse.get_pos()
@@ -151,6 +157,12 @@ class Player(pygame.sprite.Sprite):
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
 
+# class Ememy(pygame.sprite.Sprite):
+#     def __init__(self):
+#         self.image = pygame.transform.rotozoom(pygame.image.load('Images/player1.png').convert_alpha(), 0, PLAYER_SIZE)
+#         self.health = 100
+#
+
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, angle):
         super().__init__()
@@ -270,9 +282,8 @@ def setup_maze(current_level):
                 # Update wall coordinates
                 walls_group.add(Wall(pos_x, pos_y))
             elif character == "P":
-                # TODO - fix this
-                PLAYER_START_X = pos_x
-                PLAYER_START_Y = pos_y
+                player.set_position(pos_x, pos_y)
+
 
 
 def main():
