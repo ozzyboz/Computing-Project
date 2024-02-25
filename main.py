@@ -23,17 +23,12 @@ class Player(pygame.sprite.Sprite):
         self.hitbox_rect = self.base_player_image.get_rect()
         self.rect = self.hitbox_rect.copy()
         self.speed = PLAYER_SPEED
+        self.health = 100
         self.velocity_x = 0
         self.velocity_y = 0
         self.shoot = False
         self.shoot_cooldown = 0
         self.gun_barrel_offset = pygame.math.Vector2(GUN_OFFSET_X, GUN_OFFSET_Y)
-
-    def set_position(self,x, y):
-        self.rect.x = x
-        self.rect.y = y
-        self.hitbox_rect.x = x
-        self.hitbox_rect.y = y
 
     def player_rotation(self):
         self.mouse_coords = pygame.mouse.get_pos()
@@ -42,6 +37,7 @@ class Player(pygame.sprite.Sprite):
         self.angle = math.degrees(math.atan2(self.y_change_mouse_player, self.x_change_mouse_player))
         self.image = pygame.transform.rotate(self.base_player_image, -self.angle)
         self.rect = self.image.get_rect(center=self.hitbox_rect.center)
+
     def player_input(self):
         self.velocity_x = 0
         self.velocity_y = 0
@@ -67,14 +63,12 @@ class Player(pygame.sprite.Sprite):
         else:
             self.shoot = False
 
-
     def move(self, collidable):
         self.isCollided(collidable)
         self.rect.x += self.velocity_x
         self.rect.y += self.velocity_y
         self.hitbox_rect.x += self.velocity_x
         self.hitbox_rect.y += self.velocity_y
-
 
     def isCollided(self, collidable):
         # Find sprites in a group that intersect another sprite.
@@ -132,7 +126,6 @@ class Player(pygame.sprite.Sprite):
             #     self.hitbox_rect.top = collided_object.rect.bottom
             #     self.velocity_y = 0
 
-
     def is_shooting(self):
         if self.shoot_cooldown == 0:
             self.shoot_cooldown = SHOOT_COOLDOWN
@@ -157,11 +150,25 @@ class Player(pygame.sprite.Sprite):
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
 
-# class Ememy(pygame.sprite.Sprite):
-#     def __init__(self):
-#         self.image = pygame.transform.rotozoom(pygame.image.load('Images/player1.png').convert_alpha(), 0, PLAYER_SIZE)
-#         self.health = 100
-#
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__()
+        self.image = pygame.transform.rotozoom(pygame.image.load('Images/zombie_idle01.png').convert_alpha(), 0, PLAYER_SIZE)
+        self.base_player_image = self.image
+        self.hitbox_rect = self.base_player_image.get_rect()
+        self.rect = self.hitbox_rect.copy()
+        self.health = 100
+        dx = self.rect.x - pos_x
+        dy = self.rect.y - pos_y
+        self.rect.x = pos_x
+        self.rect.y = pos_y
+        self.hitbox_rect.x -= dx
+        self.hitbox_rect.y -= dy
+
+    def shift_world(self, shift_x, shift_y):
+        self.rect.x += shift_x
+        self.rect.y += shift_y
+
 
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, x, y, angle):
@@ -234,6 +241,8 @@ def create_instances():
     player_group = pygame.sprite.Group()
     player_group.add(player)
 
+    enemies_group = pygame.sprite.Group()
+
     bullet_group = pygame.sprite.Group()
 
     current_level = 0
@@ -270,6 +279,8 @@ def run_viewbox(player_x, player_y):
     if (dx != 0 or dy != 0):
         for wall in walls_group:
             wall.shift_world(dx, dy)
+        for enemy in enemies_group:
+            enemy.shift_world(dx, dy)
 
 def setup_maze(current_level):
     for y in range(len(levels[current_level])):
@@ -283,6 +294,9 @@ def setup_maze(current_level):
                 walls_group.add(Wall(pos_x, pos_y))
             elif character == "P":
                 player.set_position(pos_x, pos_y)
+            elif character == 'E':
+                enemies_group.add(Enemy(pos_x, pos_y))
+
 
 
 
@@ -307,6 +321,7 @@ def main():
             if (wall.rect.x < WIDTH) and (wall.rect.y < HEIGHT):
                 wall.draw(window)
         player_group.draw(window)
+        enemies_group.draw(window)
         bullet_group.draw(window)
 
         keys = pygame.key.get_pressed()
@@ -315,8 +330,8 @@ def main():
                 pygame.quit()
                 exit()
 
-        pygame.draw.rect(window, 'red', player.hitbox_rect, width=2)
-        pygame.draw.rect(window, 'yellow', player.rect, width=2)
+        # pygame.draw.rect(window, 'red', player.hitbox_rect, width=2)
+        # pygame.draw.rect(window, 'yellow', player.rect, width=2)
 
         pygame.display.update()
         clock.tick(FPS)
