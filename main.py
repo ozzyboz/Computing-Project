@@ -217,6 +217,11 @@ class Bullet(pygame.sprite.Sprite):
     def isCollided(self, collidable):
         collision_list = pygame.sprite.spritecollide(self, collidable, False)
         for collided_object in collision_list:
+            if isinstance(collided_object, Enemy):
+                collided_object.health -= 25
+                if collided_object.health <= 0:
+                    collided_object.kill()
+                    collidable.remove(collided_object)
             self.kill()
 
     def update(self, collidable = pygame.sprite.Group()):
@@ -324,6 +329,7 @@ def main():
     while running:
 
         bullet_group.update(walls_group)
+        bullet_group.update(enemies_group)
         player_group.update(walls_group)
         enemies_group.update()
         walls_group.update()
