@@ -223,7 +223,7 @@ class Bullet(pygame.sprite.Sprite):
         collision_list = pygame.sprite.spritecollide(self, collidable, False)
         for collided_object in collision_list:
             if isinstance(collided_object, Enemy):
-                collided_object.health -= 25
+                collided_object.health -= 35
                 if collided_object.health <= 0:
                     collided_object.kill()
                     collidable.remove(collided_object)
