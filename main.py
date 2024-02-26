@@ -4,20 +4,20 @@ import math
 from settings import *
 from levels import levels
 import logging
+
 #comment
 pygame.init()
-
+# Game Window
 info = pygame.display.Info()
 screen_width,screen_height = info.current_w,info.current_h
 window_width,window_height = screen_width-10,screen_height-50
-
-# Game Window
 window = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption('Sandstorm')
 clock = pygame.time.Clock()
 pygame_icon = pygame.image.load('Images/sandstormicon.PNG')
 pygame.display.set_icon(pygame_icon)
-
+# Loads Music
+pistol_shot_sound = pygame.mixer.Sound("Sounds/Pistol_Firing.wav")
 # Loads Player
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -136,6 +136,7 @@ class Player(pygame.sprite.Sprite):
             spawn_bullet_pos = self.rect.center + self.gun_barrel_offset.rotate(self.angle)
             self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle)
             bullet_group.add(self.bullet)
+            pygame.mixer.Sound.play(pistol_shot_sound)
             # player_group.add(self.bullet)
 
     def set_position(self, x, y):
