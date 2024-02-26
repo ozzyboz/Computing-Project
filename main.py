@@ -7,8 +7,12 @@ import logging
 #comment
 pygame.init()
 
+info = pygame.display.Info()
+screen_width,screen_height = info.current_w,info.current_h
+window_width,window_height = screen_width-10,screen_height-50
+
 # Game Window
-window = pygame.display.set_mode((WIDTH, HEIGHT))
+window = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption('Sandstorm')
 clock = pygame.time.Clock()
 pygame_icon = pygame.image.load('Images/sandstormicon.PNG')
@@ -18,7 +22,7 @@ pygame.display.set_icon(pygame_icon)
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = pygame.transform.rotozoom(pygame.image.load('Images/player1.png').convert_alpha(), 0, PLAYER_SIZE)
+        self.image = pygame.transform.rotozoom(pygame.image.load('Images/player1.png').convert_alpha(), 0, 0.8)
         self.base_player_image = self.image
         self.hitbox_rect = self.base_player_image.get_rect()
         self.rect = self.hitbox_rect.copy()
@@ -153,7 +157,7 @@ class Player(pygame.sprite.Sprite):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__()
-        self.image = pygame.transform.rotozoom(pygame.image.load('Images/zombie_idle01.png').convert_alpha(), 0, PLAYER_SIZE)
+        self.image = pygame.transform.rotozoom(pygame.image.load('Images/zombie_idle01.png').convert_alpha(), 0, 0.8)
         self.base_player_image = self.image
         self.hitbox_rect = self.image.get_rect()
         self.rect = self.hitbox_rect.copy()
@@ -230,9 +234,10 @@ class Bullet(pygame.sprite.Sprite):
 
 class Wall(pygame.sprite.Sprite):
 
-    def __init__(self, x, y, width=64, height=64):
+    def __init__(self, x, y, width=128, height=128):
         super().__init__()
         self.image = pygame.image.load('images/Wall.png').convert_alpha()
+        self.image = pygame.transform.rotozoom(self.image, 0, 2)
 
         # self.image = pygame.Surface((width, height))
         # self.image.fill((255,100,180))
@@ -270,10 +275,10 @@ def create_instances():
     enemies_group = pygame.sprite.Group()
 
 def run_viewbox(player_x, player_y):
-    left_viewbox = WIDTH/2 - WIDTH/8
-    right_viewbox = WIDTH/2 + WIDTH/8
-    top_viewbox = HEIGHT/2 - HEIGHT/8
-    bottom_viewbox = HEIGHT/2 + HEIGHT/8
+    left_viewbox = window_width/2 - window_width/8
+    right_viewbox = window_width/2 - window_width/16
+    top_viewbox = window_height/2 - window_height/8
+    bottom_viewbox = window_height/2 - window_height/16
     dx, dy = 0, 0
 
     if(player_x <= left_viewbox):
@@ -303,8 +308,8 @@ def setup_maze(current_level):
     for y in range(len(levels[current_level])):
         for x in range(len(levels[current_level][y])):
             character = levels[current_level][y][x]
-            pos_x = (x * 64)
-            pos_y = (y * 64)
+            pos_x = (x * 128)
+            pos_y = (y * 128)
 
             if character == "X":
                 # Update wall coordinates
@@ -338,7 +343,7 @@ def main():
         window.fill((0, 0, 0))
 
         for wall in walls_group:
-            if (wall.rect.x < WIDTH) and (wall.rect.y < HEIGHT):
+            if (wall.rect.x < window_width) and (wall.rect.y < window_height):
                 wall.draw(window)
         player_group.draw(window)
         enemies_group.draw(window)
