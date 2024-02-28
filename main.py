@@ -158,33 +158,45 @@ class Player(pygame.sprite.Sprite):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__()
-        self.image = pygame.transform.rotozoom(pygame.image.load('Images/zombie_idle01.png').convert_alpha(), 0, 0.8)
-        self.base_player_image = self.image
-        self.hitbox_rect = self.image.get_rect()
-        self.rect = self.hitbox_rect.copy()
+        self.image = pygame.image.load('Images/zombie_idle01.png').convert_alpha()
+        self.image = pygame.transform.rotozoom(self.image, 0, 0.8)
+
+        self.rect = self.image.get_rect()
+        self.rect.center = pos_x, pos_y
+
+        self.direction = pygame.math.Vector2()
+        self.velocity = pygame.math.Vector2()
+
+        self.speed = 4
         self.health = 100
-        dx = self.rect.x - pos_x
-        dy = self.rect.y - pos_y
-        self.rect.x = pos_x
-        self.rect.y = pos_y
-        self.hitbox_rect.x -= dx
-        self.hitbox_rect.y -= dy
 
-    def enemy_rotation(self):
-        self.player_x = Player().rect.x
-        self.player_y = Player().rect.y
-        self.x_change_player = (self.player_x - self.hitbox_rect.centerx)
-        self.y_change_player = (self.player_y - self.hitbox_rect.centery)
-        self.angle = math.degrees(math.atan2(self.y_change_player, self.x_change_player))
-        self.image = pygame.transform.rotate(self.base_player_image, -self.angle)
+        self.position = pygame.math.Vector2(pos_x, pos_y)
 
+    def hunt_player(self):
+        player_vector = pygame.math.Vector2()
+        enemy_vector = pygame.math.Vector2(self.rect.center)
+        distance = self.get_vector_distance(player_vector, enemy_vector)
+
+        if distance > 0 and distance < 10:
+            self.direction = (player_vector - enemy_vector).normalize()
+        else:
+            self.direction = pygame.math.Vector2()
+
+        self.velocity = self.direction * self.speed
+        self.position += self.velocity
+
+        self.rect.centerx = self.position.x
+        self.rect.centery = self.position.y
+
+    def get_vector_distance(self, vector_1, vector_2):
+        return (vector_1 - vector_2).magnitude()
 
     def shift_world(self, shift_x, shift_y):
         self.rect.x += shift_x
         self.rect.y += shift_y
 
     def update(self):
-        self.enemy_rotation()
+        self.hunt_player()
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -273,7 +285,6 @@ def create_instances():
 
 
     walls_group = pygame.sprite.Group()
-    enemies_group = pygame.sprite.Group()
 
 def run_viewbox(player_x, player_y):
     left_viewbox = window_width/2 - window_width/8
