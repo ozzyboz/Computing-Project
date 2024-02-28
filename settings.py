@@ -4,7 +4,7 @@ FPS = 60
 
 #Player Settings
 PLAYER_SIZE = 0.35
-PLAYER_SPEED = 7
+PLAYER_SPEED = 6
 
 #Shooting Settings
 SHOOT_COOLDOWN = 20
