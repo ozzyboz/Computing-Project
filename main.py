@@ -28,8 +28,46 @@ winScreen_x = (window_width - winScreen_width)//2
 winScreen_y = (window_height - winScreen_height)//2
 # Loads Music
 pistol_shot_sound = pygame.mixer.Sound("Sounds/Pistol_Firing.wav")
-# Loads Player
-class Player(pygame.sprite.Sprite):
+
+
+class MovingCharacter(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.velocity_x = 0
+        self.velocity_y = 0
+
+    def move(self, walls):
+        self.is_collided_with_wall(walls)
+        self.rect.x += self.velocity_x
+        self.rect.y += self.velocity_y
+        self.hitbox_rect.x += self.velocity_x
+        self.hitbox_rect.y += self.velocity_y
+
+    def is_collided_with_wall(self, walls):
+        collision_list = pygame.sprite.spritecollide(self, walls, False)
+
+        # if intersection with collidable object in collision_list ( horizontal x direction )
+        for collided_object in collision_list:
+            # if only moving left, ignore collisions to the top or bottom
+            if self.velocity_x != 0 and self.velocity_y == 0 and (self.hitbox_rect.top >= collided_object.rect.centery or self.hitbox_rect.bottom <= collided_object.rect.centery):
+                continue
+            if self.velocity_y != 0 and self.velocity_x == 0 and (self.hitbox_rect.left >= collided_object.rect.centerx or self.hitbox_rect.right <= collided_object.rect.centerx):
+                continue
+
+            # Moving Left
+            if self.velocity_x < 0 and self.hitbox_rect.left <= collided_object.rect.right and self.hitbox_rect.right >= collided_object.rect.right:
+                self.velocity_x = 0
+            # Moving Up
+            if self.velocity_y < 0 and self.hitbox_rect.top <= collided_object.rect.bottom and self.hitbox_rect.bottom >= collided_object.rect.bottom:
+                self.velocity_y = 0
+            # Moving Right
+            if self.velocity_x > 0 and self.hitbox_rect.right >= collided_object.rect.left and self.hitbox_rect.left <= collided_object.rect.left:
+                self.velocity_x = 0
+            # Moving Down
+            if self.velocity_y > 0 and self.hitbox_rect.bottom >= collided_object.rect.top and self.hitbox_rect.top <= collided_object.rect.top:
+                self.velocity_y = 0
+
+class Player(MovingCharacter):
     killCount = 0
 
     def __init__(self):
@@ -40,8 +78,6 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.hitbox_rect.copy()
         self.speed = PLAYER_SPEED
         self.health = 100
-        self.velocity_x = 0
-        self.velocity_y = 0
         self.shoot = False
         self.shoot_cooldown = 0
         self.gun_barrel_offset = pygame.math.Vector2(GUN_OFFSET_X, GUN_OFFSET_Y)
@@ -79,37 +115,6 @@ class Player(pygame.sprite.Sprite):
         else:
             self.shoot = False
 
-    def move(self, collidable):
-        self.isCollided(collidable)
-        self.rect.x += self.velocity_x
-        self.rect.y += self.velocity_y
-        self.hitbox_rect.x += self.velocity_x
-        self.hitbox_rect.y += self.velocity_y
-
-    def isCollided(self, collidable):
-        collision_list = pygame.sprite.spritecollide(self, collidable, False)
-
-        # if intersection with collidable object in collision_list ( horizontal x direction )
-        for collided_object in collision_list:
-            # if only moving left, ignore collisions to the top or bottom
-            if self.velocity_x != 0 and self.velocity_y == 0 and (self.hitbox_rect.top >= collided_object.rect.centery or self.hitbox_rect.bottom <= collided_object.rect.centery):
-                continue
-            if self.velocity_y != 0 and self.velocity_x == 0 and (self.hitbox_rect.left >= collided_object.rect.centerx or self.hitbox_rect.right <= collided_object.rect.centerx):
-                continue
-
-            # Moving Left
-            if self.velocity_x < 0 and self.hitbox_rect.left <= collided_object.rect.right and self.hitbox_rect.right >= collided_object.rect.right:
-                self.velocity_x = 0
-            # Moving Up
-            if self.velocity_y < 0 and self.hitbox_rect.top <= collided_object.rect.bottom and self.hitbox_rect.bottom >= collided_object.rect.bottom:
-                self.velocity_y = 0
-            # Moving Right
-            if self.velocity_x > 0 and self.hitbox_rect.right >= collided_object.rect.left and self.hitbox_rect.left <= collided_object.rect.left:
-                self.velocity_x = 0
-            # Moving Down
-            if self.velocity_y > 0 and self.hitbox_rect.bottom >= collided_object.rect.top and self.hitbox_rect.top <= collided_object.rect.top:
-                self.velocity_y = 0
-
     def is_shooting(self):
         if self.shoot_cooldown == 0:
             self.shoot_cooldown = SHOOT_COOLDOWN
@@ -135,7 +140,7 @@ class Player(pygame.sprite.Sprite):
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
 
-class Enemy(pygame.sprite.Sprite):
+class Enemy(MovingCharacter):
     def __init__(self, pos_x, pos_y):
         super().__init__()
         self.image = pygame.transform.rotozoom(pygame.image.load('Images/zombie_idle01.png').convert_alpha(), 0, 0.8)
@@ -156,22 +161,27 @@ class Enemy(pygame.sprite.Sprite):
         self.hitbox_rect = self.image.get_rect(center=self.rect.center)
         self.rect = self.hitbox_rect.copy()
 
-    def move(self):
+    def move(self, wall_group):
         playerx = player.rect.centerx
         playery = player.rect.centery
         dx = playerx - self.rect.centerx
         dy = playery - self.rect.centery
         if utils.distance(playerx, playery, self.rect.centerx, self.rect.centery) < 1000:
             if dx < 0:
-                self.rect.centerx -= 5
-            if dx > 0:
-                self.rect.centerx += 5
+                self.velocity_x = -5
+            elif dx > 0:
+                self.velocity_x = 5
+            else:
+                self.velocity_x = 0
             if dy < 0:
-                self.rect.centery -= 5
-            if dy > 0:
-                self.rect.centery += 5
+                self.velocity_y = -5
+            elif dy > 0:
+                self.velocity_y = 5
+            else:
+                self.velocity_y = 0
+        super().move(wall_group)
 
-    def isCollided(self, collidable):
+    def is_collided_with_player(self, collidable):
         collision_list = pygame.sprite.spritecollide(self, collidable, False)
         for collided_object in collision_list:
             if isinstance(collided_object, Player):
@@ -185,10 +195,10 @@ class Enemy(pygame.sprite.Sprite):
         self.rect.x += shift_x
         self.rect.y += shift_y
 
-    def update(self, collidable = pygame.sprite.Group()):
-        self.isCollided(collidable)
+    def update(self):
+        self.is_collided_with_player(player_group)
         self.enemy_rotation()
-        self.move()
+        self.move(walls_group)
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -344,7 +354,7 @@ def main():
         bullet_group.update(walls_group)
         bullet_group.update(enemies_group)
         player_group.update(walls_group)
-        enemies_group.update(player_group)
+        enemies_group.update()
         walls_group.update()
 
         run_viewbox(player.rect.x, player.rect.y)
