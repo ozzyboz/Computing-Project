@@ -16,7 +16,7 @@ info = pygame.display.Info()
 screen_width,screen_height = info.current_w,info.current_h
 window_width,window_height = screen_width-10,screen_height-50
 window = pygame.display.set_mode((window_width, window_height))
-pygame.display.set_caption('Sandstorm')
+pygame.display.set_caption('Don\'t touch the Zombies!')
 clock = pygame.time.Clock()
 pygame.time.set_timer(pygame.USEREVENT, 1000)
 pygame_icon = pygame.image.load('Images/sandstormicon.PNG')
@@ -382,7 +382,7 @@ def main():
                 pygame.quit()
                 exit()
             if event.type == pygame.USEREVENT:
-                if counter > 0:
+                if counter > 0 and player.health != 0:
                    counter -= 1
         if counter < 1:
             window.blit(timesup_text_surface, (winScreen_x, winScreen_y))
