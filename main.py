@@ -1,6 +1,10 @@
+import time
+
 import pygame
 from sys import exit
 import math
+
+import utils
 from settings import *
 from levels import levels
 import logging
@@ -26,6 +30,7 @@ pistol_shot_sound = pygame.mixer.Sound("Sounds/Pistol_Firing.wav")
 # Loads Player
 class Player(pygame.sprite.Sprite):
     killCount = 0
+
     def __init__(self):
         super().__init__()
         self.image = pygame.transform.rotozoom(pygame.image.load('Images/player1.png').convert_alpha(), 0, 0.8)
@@ -184,12 +189,23 @@ class Enemy(pygame.sprite.Sprite):
         self.angle = math.degrees(math.atan2(self.y_change_player, self.x_change_player))
         self.image = pygame.transform.rotate(self.base_player_image, -self.angle)
 
+    def isCollided(self, collidable):
+        collision_list = pygame.sprite.spritecollide(self, collidable, False)
+        for collided_object in collision_list:
+            if isinstance(collided_object, Player):
+                if utils.distance(collided_object.rect.x, collided_object.rect.y, self.rect.x, self.rect.y) < self.rect.width//2:
+                    # game over
+                    collided_object.kill()
+                    collidable.remove(collided_object)
+
+
 
     def shift_world(self, shift_x, shift_y):
         self.rect.x += shift_x
         self.rect.y += shift_y
 
-    def update(self):
+    def update(self, collidable = pygame.sprite.Group()):
+        self.isCollided(collidable)
         self.enemy_rotation()
 
 
@@ -345,7 +361,7 @@ def main():
         bullet_group.update(walls_group)
         bullet_group.update(enemies_group)
         player_group.update(walls_group)
-        enemies_group.update()
+        enemies_group.update(player_group)
         walls_group.update()
 
         run_viewbox(player.rect.x, player.rect.y)
