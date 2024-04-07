@@ -20,9 +20,10 @@ pygame.display.set_caption('Sandstorm')
 clock = pygame.time.Clock()
 pygame_icon = pygame.image.load('Images/sandstormicon.PNG')
 pygame.display.set_icon(pygame_icon)
-winScreen = pygame.image.load('Images/pygame_screen_size-removebg-preview.png')
-winScreen = winScreen.convert()
-winScreen_width, winScreen_height = winScreen.get_rect().size
+font = pygame.font.Font(None, 72)
+gameover_text_surface = font.render("Game Over",True, (255,0,0))
+win_text_surface = font.render("Mission Complete", True, (0,255,0))
+winScreen_width, winScreen_height = win_text_surface.get_size()
 winScreen_x = (window_width - winScreen_width)//2
 winScreen_y = (window_height - winScreen_height)//2
 # Loads Music
@@ -195,6 +196,7 @@ class Enemy(pygame.sprite.Sprite):
             if isinstance(collided_object, Player):
                 if utils.distance(collided_object.rect.x, collided_object.rect.y, self.rect.x, self.rect.y) < self.rect.width//2:
                     # game over
+                    player.health = 0
                     collided_object.kill()
                     collidable.remove(collided_object)
 
@@ -284,6 +286,7 @@ def create_instances():
     global current_level, running, player, player_group
     global all_sprites_group, bullet_group, walls_group, enemies_group
 
+    global player
     player = Player()
     player_group = pygame.sprite.Group()
     player_group.add(player)
@@ -381,7 +384,9 @@ def main():
                 exit()
 
         if len(enemies_group) <= 0:
-            window.blit(winScreen, (winScreen_x, winScreen_y))
+            window.blit(win_text_surface, (winScreen_x, winScreen_y))
+        if player.health == 0:
+            window.blit(gameover_text_surface, (winScreen_x, winScreen_y))
 
         # pygame.draw.rect(window, 'red', player.hitbox_rect, width=2)
         # pygame.draw.rect(window, 'yellow', player.rect, width=2)
