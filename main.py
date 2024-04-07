@@ -18,11 +18,13 @@ window_width,window_height = screen_width-10,screen_height-50
 window = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption('Sandstorm')
 clock = pygame.time.Clock()
+pygame.time.set_timer(pygame.USEREVENT, 1000)
 pygame_icon = pygame.image.load('Images/sandstormicon.PNG')
 pygame.display.set_icon(pygame_icon)
 font = pygame.font.Font(None, 72)
 gameover_text_surface = font.render("Mission Failed",True, (255,0,0))
 win_text_surface = font.render("Mission Successful", True, (0,255,0))
+timesup_text_surface = font.render("Times Up", True, (255,0,0))
 winScreen_width, winScreen_height = win_text_surface.get_size()
 winScreen_x = (window_width - winScreen_width)//2
 winScreen_y = (window_height - winScreen_height)//2
@@ -68,8 +70,7 @@ class MovingCharacter(pygame.sprite.Sprite):
                 self.velocity_y = 0
 
 class Player(MovingCharacter):
-    killCount = 0
-
+    score = 0
     def __init__(self):
         super().__init__()
         self.image = pygame.transform.rotozoom(pygame.image.load('Images/player1.png').convert_alpha(), 0, 0.8)
@@ -132,11 +133,12 @@ class Player(MovingCharacter):
         self.hitbox_rect.x -= dx
         self.hitbox_rect.y -= dy
 
-    def update(self, collidable = pygame.sprite.Group()):
+    def update(self, collidable = pygame.sprite.Group(), counter = 0):
         self.player_rotation()
         self.player_input()
         self.move(collidable)
-
+        if counter <= 0:
+            self.kill()
         if self.shoot_cooldown > 0:
             self.shoot_cooldown -= 1
 
@@ -245,8 +247,7 @@ class Bullet(pygame.sprite.Sprite):
                 if collided_object.health <= 0:
                     collided_object.kill()
                     collidable.remove(collided_object)
-                    Player.killCount += 1
-                    logging.warning(Player.killCount)
+                    Player.score += 100
             self.kill()
 
     def update(self, collidable = pygame.sprite.Group()):
@@ -274,7 +275,6 @@ class Wall(pygame.sprite.Sprite):
 
     def draw(self, window):
         window.blit(self.image, (self.rect.x, self.rect.y))
-
 
 def create_instances():
     global current_level, running, player, player_group
@@ -348,6 +348,7 @@ def setup_maze(current_level):
 def main():
     loading = True
     isGameOver = False
+    counter = 60
     create_instances()
     setup_maze(current_level)
 
@@ -357,7 +358,7 @@ def main():
 
         bullet_group.update(walls_group)
         bullet_group.update(enemies_group)
-        player_group.update(walls_group)
+        player_group.update(walls_group, counter)
         enemies_group.update()
         walls_group.update()
 
@@ -371,21 +372,35 @@ def main():
         enemies_group.draw(window)
         bullet_group.draw(window)
 
+        time_surface = font.render("Time: " + str(counter), True, (255,255,255))
+        window.blit(time_surface, (0,100))
+
+
         keys = pygame.key.get_pressed()
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+            if event.type == pygame.USEREVENT:
+                if counter > 0:
+                   counter -= 1
+        if counter < 1:
+            window.blit(timesup_text_surface, (winScreen_x, winScreen_y))
 
         if len(enemies_group) <= 0:
             window.blit(win_text_surface, (winScreen_x, winScreen_y))
         if player.health == 0:
             window.blit(gameover_text_surface, (winScreen_x, winScreen_y))
+        enemiesRemaining = len(enemies_group)
+        enemiesRemaining_surface = font.render("Enemies Remaining: " + str(enemiesRemaining), True, (255, 255, 255))
+        window.blit(enemiesRemaining_surface, (0,0))
+        score_surface = font.render("Score: " + str(player.score), True, (255, 255, 255))
+        window.blit(score_surface, (0,50))
 
         # pygame.draw.rect(window, 'red', player.hitbox_rect, width=2)
         # pygame.draw.rect(window, 'yellow', player.rect, width=2)
 
         pygame.display.update()
-        clock.tick(FPS)
+        clock.tick(60)
 
 main()
