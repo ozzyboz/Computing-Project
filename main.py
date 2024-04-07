@@ -21,8 +21,8 @@ clock = pygame.time.Clock()
 pygame_icon = pygame.image.load('Images/sandstormicon.PNG')
 pygame.display.set_icon(pygame_icon)
 font = pygame.font.Font(None, 72)
-gameover_text_surface = font.render("Game Over",True, (255,0,0))
-win_text_surface = font.render("Mission Complete", True, (0,255,0))
+gameover_text_surface = font.render("Mission Failed",True, (255,0,0))
+win_text_surface = font.render("Mission Successful", True, (0,255,0))
 winScreen_width, winScreen_height = win_text_surface.get_size()
 winScreen_x = (window_width - winScreen_width)//2
 winScreen_y = (window_height - winScreen_height)//2
@@ -166,19 +166,22 @@ class Enemy(MovingCharacter):
         playery = player.rect.centery
         dx = playerx - self.rect.centerx
         dy = playery - self.rect.centery
-        if utils.distance(playerx, playery, self.rect.centerx, self.rect.centery) < 1000:
+        if utils.distance(playerx, playery, self.rect.centerx, self.rect.centery) < 900:
             if dx < 0:
-                self.velocity_x = -5
+                self.velocity_x = -10
             elif dx > 0:
-                self.velocity_x = 5
+                self.velocity_x = 10
             else:
                 self.velocity_x = 0
             if dy < 0:
-                self.velocity_y = -5
+                self.velocity_y = -10
             elif dy > 0:
-                self.velocity_y = 5
+                self.velocity_y = 10
             else:
                 self.velocity_y = 0
+            if self.velocity_x != 0 and self.velocity_y != 0:
+                self.velocity_x /= math.sqrt(2)
+                self.velocity_y /= math.sqrt(2)
         super().move(wall_group)
 
     def is_collided_with_player(self, collidable):
@@ -190,6 +193,7 @@ class Enemy(MovingCharacter):
                     player.health = 0
                     collided_object.kill()
                     collidable.remove(collided_object)
+                    self.kill()
 
     def shift_world(self, shift_x, shift_y):
         self.rect.x += shift_x
@@ -237,7 +241,7 @@ class Bullet(pygame.sprite.Sprite):
         collision_list = pygame.sprite.spritecollide(self, collidable, False)
         for collided_object in collision_list:
             if isinstance(collided_object, Enemy):
-                collided_object.health -= 10
+                collided_object.health -= 15
                 if collided_object.health <= 0:
                     collided_object.kill()
                     collidable.remove(collided_object)
