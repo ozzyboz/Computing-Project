@@ -87,12 +87,6 @@ class Player(pygame.sprite.Sprite):
         self.hitbox_rect.y += self.velocity_y
 
     def isCollided(self, collidable):
-        # Find sprites in a group that intersect another sprite.
-        # spritecollide(sprite, group, dokill, collided = None)
-        # Intersection is determined by comparing the Sprite.rect attribute of each Sprite
-        # Find sprites in a group that intersect another sprite.
-        # spritecollide(sprite, group, dokill, collided = None)
-        # Intersection is determined by comparing the Sprite.rect attribute of each Spri
         collision_list = pygame.sprite.spritecollide(self, collidable, False)
 
         # if intersection with collidable object in collision_list ( horizontal x direction )
@@ -115,32 +109,6 @@ class Player(pygame.sprite.Sprite):
             # Moving Down
             if self.velocity_y > 0 and self.hitbox_rect.bottom >= collided_object.rect.top and self.hitbox_rect.top <= collided_object.rect.top:
                 self.velocity_y = 0
-
-            # if (self.rect.bottom <= collided_object.rect.top or self.rect.top >= collided_object.rect.bottom):
-            # if (self.velocity_x > 0):
-            #     # Update relative position
-            #     self.rect.right = collided_object.rect.left
-            #     self.hitbox_rect.right = collided_object.rect.left
-            #     self.velocity_x = 0
-            #
-            # elif (self.velocity_x < 0):
-            #     # Update relative position
-            #     self.rect.left = collided_object.rect.right
-            #     self.hitbox_rect.left = collided_object.rect.right
-            #     self.velocity_x = 0
-            #
-            # # Moving down
-            # if (self.velocity_y > 0):
-            #     # Update relative position
-            #     self.rect.bottom = collided_object.rect.top
-            #     self.hitbox_rect.bottom = collided_object.rect.top
-            #     self.velocity_y = 0
-            # # Moving up
-            # elif (self.velocity_y < 0):
-            #     # Update relative position
-            #     self.rect.top = collided_object.rect.bottom
-            #     self.hitbox_rect.top = collided_object.rect.bottom
-            #     self.velocity_y = 0
 
     def is_shooting(self):
         if self.shoot_cooldown == 0:
