@@ -20,6 +20,7 @@ pygame.display.set_icon(pygame_icon)
 pistol_shot_sound = pygame.mixer.Sound("Sounds/Pistol_Firing.wav")
 # Loads Player
 class Player(pygame.sprite.Sprite):
+    killCount = 0
     def __init__(self):
         super().__init__()
         self.image = pygame.transform.rotozoom(pygame.image.load('Images/player1.png').convert_alpha(), 0, 0.8)
@@ -162,7 +163,7 @@ class Enemy(pygame.sprite.Sprite):
         self.base_player_image = self.image
         self.hitbox_rect = self.image.get_rect()
         self.rect = self.hitbox_rect.copy()
-        self.health = 100
+        self.health = 50
         dx = self.rect.x - pos_x
         dy = self.rect.y - pos_y
         self.rect.x = pos_x
@@ -223,10 +224,12 @@ class Bullet(pygame.sprite.Sprite):
         collision_list = pygame.sprite.spritecollide(self, collidable, False)
         for collided_object in collision_list:
             if isinstance(collided_object, Enemy):
-                collided_object.health -= 35
+                collided_object.health -= 10
                 if collided_object.health <= 0:
                     collided_object.kill()
                     collidable.remove(collided_object)
+                    Player.killCount += 1
+                    logging.warning(Player.killCount)
             self.kill()
 
     def update(self, collidable = pygame.sprite.Group()):
@@ -355,6 +358,10 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+
+        if len(enemies_group) <= 0:
+            pygame.quit()
+            exit()
 
         # pygame.draw.rect(window, 'red', player.hitbox_rect, width=2)
         # pygame.draw.rect(window, 'yellow', player.rect, width=2)
