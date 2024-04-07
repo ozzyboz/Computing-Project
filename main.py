@@ -16,6 +16,11 @@ pygame.display.set_caption('Sandstorm')
 clock = pygame.time.Clock()
 pygame_icon = pygame.image.load('Images/sandstormicon.PNG')
 pygame.display.set_icon(pygame_icon)
+winScreen = pygame.image.load('Images/pygame_screen_size-removebg-preview.png')
+winScreen = winScreen.convert()
+winScreen_width, winScreen_height = winScreen.get_rect().size
+winScreen_x = (window_width - winScreen_width)//2
+winScreen_y = (window_height - winScreen_height)//2
 # Loads Music
 pistol_shot_sound = pygame.mixer.Sound("Sounds/Pistol_Firing.wav")
 # Loads Player
@@ -360,8 +365,7 @@ def main():
                 exit()
 
         if len(enemies_group) <= 0:
-            pygame.quit()
-            exit()
+            window.blit(winScreen, (winScreen_x, winScreen_y))
 
         # pygame.draw.rect(window, 'red', player.hitbox_rect, width=2)
         # pygame.draw.rect(window, 'yellow', player.rect, width=2)

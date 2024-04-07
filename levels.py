@@ -4,7 +4,7 @@ level_1 = [
     "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
     "XX          XX        XX          XX            XX",
     "XX          XX        XX                        XX",
-    "XX    P          E    XX  E    E                XX",
+    "XX    P          E    XX                        XX",
     "XX                    XX          XX            XX",
     "XX          XX        XX          XX            XX",
     "XXXXXXXXXXXXXXXXX  XXXXXXXXX  XXXXXX            XX",
