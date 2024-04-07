@@ -188,6 +188,21 @@ class Enemy(pygame.sprite.Sprite):
         self.hitbox_rect = self.image.get_rect(center=self.rect.center)
         self.rect = self.hitbox_rect.copy()
 
+    def move(self):
+        playerx = player.rect.centerx
+        playery = player.rect.centery
+        dx = playerx - self.rect.centerx
+        dy = playery - self.rect.centery
+        if utils.distance(playerx, playery, self.rect.centerx, self.rect.centery) < 1000:
+            if dx < 0:
+                self.rect.centerx -= 5
+            if dx > 0:
+                self.rect.centerx += 5
+            if dy < 0:
+                self.rect.centery -= 5
+            if dy > 0:
+                self.rect.centery += 5
+
     def isCollided(self, collidable):
         collision_list = pygame.sprite.spritecollide(self, collidable, False)
         for collided_object in collision_list:
@@ -205,6 +220,7 @@ class Enemy(pygame.sprite.Sprite):
     def update(self, collidable = pygame.sprite.Group()):
         self.isCollided(collidable)
         self.enemy_rotation()
+        self.move()
 
 
 class Bullet(pygame.sprite.Sprite):
