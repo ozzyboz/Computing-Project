@@ -52,7 +52,7 @@ class Player(pygame.sprite.Sprite):
         self.y_change_mouse_player = (self.mouse_coords[1] - self.hitbox_rect.centery)
         self.angle = math.degrees(math.atan2(self.y_change_mouse_player, self.x_change_mouse_player))
         self.image = pygame.transform.rotate(self.base_player_image, -self.angle)
-        self.rect = self.image.get_rect(center=self.hitbox_rect.center)
+        self.rect = self.image.get_rect(center=self.rect.center)
 
     def player_input(self):
         self.velocity_x = 0
@@ -171,24 +171,22 @@ class Enemy(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__()
         self.image = pygame.transform.rotozoom(pygame.image.load('Images/zombie_idle01.png').convert_alpha(), 0, 0.8)
-        self.base_player_image = self.image
-        self.hitbox_rect = self.image.get_rect()
+        self.original_enemy_image = self.image
+        self.hitbox_rect = self.image.get_rect(x=pos_x, y=pos_y)
         self.rect = self.hitbox_rect.copy()
         self.health = 50
-        dx = self.rect.x - pos_x
-        dy = self.rect.y - pos_y
         self.rect.x = pos_x
         self.rect.y = pos_y
-        self.hitbox_rect.x -= dx
-        self.hitbox_rect.y -= dy
 
     def enemy_rotation(self):
-        self.player_x = Player().rect.x
-        self.player_y = Player().rect.y
-        self.x_change_player = (self.player_x - self.hitbox_rect.centerx)
-        self.y_change_player = (self.player_y - self.hitbox_rect.centery)
-        self.angle = math.degrees(math.atan2(self.y_change_player, self.x_change_player))
-        self.image = pygame.transform.rotate(self.base_player_image, -self.angle)
+        player_x = player.rect.centerx
+        player_y = player.rect.centery
+        x_change_player = (player_x - self.rect.centerx)
+        y_change_player = (player_y - self.rect.centery)
+        angle = math.degrees(math.atan2(y_change_player, x_change_player))
+        self.image = pygame.transform.rotate(self.original_enemy_image, -angle)
+        self.hitbox_rect = self.image.get_rect(center=self.rect.center)
+        self.rect = self.hitbox_rect.copy()
 
     def isCollided(self, collidable):
         collision_list = pygame.sprite.spritecollide(self, collidable, False)
@@ -199,8 +197,6 @@ class Enemy(pygame.sprite.Sprite):
                     player.health = 0
                     collided_object.kill()
                     collidable.remove(collided_object)
-
-
 
     def shift_world(self, shift_x, shift_y):
         self.rect.x += shift_x
