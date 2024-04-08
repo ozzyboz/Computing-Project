@@ -165,6 +165,13 @@ class Player(MovingCharacter):
                 if self.key == 1:
                     self.exit = 1
 
+    def is_collided_with_treasure(self, collidable):
+        collision_list = pygame.sprite.spritecollide(self, collidable, False)
+        for collided_object in collision_list:
+            if isinstance(collided_object, Treasure):
+                self.score += 250
+                collided_object.kill()
+                collidable.remove(collided_object)
 
     def set_position(self, x, y):
         dx = self.rect.x - x
@@ -180,6 +187,7 @@ class Player(MovingCharacter):
         self.is_collided_with_ammo(ammunition_group)
         self.is_collided_with_key(key_group)
         self.is_collided_with_door(door_group)
+        self.is_collided_with_treasure(treasure_group)
         self.move(collidable)
         if counter <= 0:
             self.kill()
@@ -402,9 +410,31 @@ class Key(pygame.sprite.Sprite):
     def draw(self, window):
         window.blit(self.image, (self.rect.x, self.rect.y))
 
+class Treasure(pygame.sprite.Sprite):
+
+    def __init__(self, x, y, width=128, height=128):
+        super().__init__()
+        self.image = pygame.image.load('images/GoldTrophy.png').convert_alpha()
+        self.image = pygame.transform.rotozoom(self.image, 0, 2)
+
+        # self.image = pygame.Surface((width, height))
+        # self.image.fill((255,100,180))
+
+        self.rect = self.image.get_rect()
+
+        self.rect.x = x
+        self.rect.y = y
+
+    def shift_world(self, shift_x, shift_y):
+        self.rect.x += shift_x
+        self.rect.y += shift_y
+
+    def draw(self, window):
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
 def create_instances():
-    global current_level, running, player, player_group, enemies_group
-    global all_sprites_group, bullet_group, walls_group, ammunition_group, fake_wall_group, door_group, key_group
+    global all_sprites_group, current_level, running, player, player_group, enemies_group
+    global bullet_group, walls_group, ammunition_group, fake_wall_group, door_group, key_group, treasure_group
 
     global player
     player = Player()
@@ -425,6 +455,7 @@ def create_instances():
     fake_wall_group = pygame.sprite.Group()
     door_group = pygame.sprite.Group()
     key_group = pygame.sprite.Group()
+    treasure_group = pygame.sprite.Group()
 
 def run_viewbox(player_x, player_y):
     left_viewbox = window_width/2 - window_width/8
@@ -463,6 +494,8 @@ def run_viewbox(player_x, player_y):
             door.shift_world(dx, dy)
         for key in key_group:
             key.shift_world(dx, dy)
+        for treasure in treasure_group:
+            treasure.shift_world(dx, dy)
 
 def setup_maze(current_level):
     for y in range(len(levels[current_level])):
@@ -487,6 +520,8 @@ def setup_maze(current_level):
                 door_group.add(Door(pos_x, pos_y))
             elif character == "K":
                 key_group.add(Key(pos_x, pos_y))
+            elif character == "T":
+                treasure_group.add(Treasure(pos_x, pos_y))
 
 
 
@@ -517,6 +552,7 @@ def main():
                 wall.draw(window)
         ammunition_group.draw(window)
         key_group.draw(window)
+        treasure_group.draw(window)
         door_group.draw(window)
         player_group.draw(window)
         enemies_group.draw(window)
