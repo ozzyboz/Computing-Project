@@ -11,6 +11,7 @@ import logging
 
 #comment
 pygame.init()
+pygame.mixer.music.load('Sounds/fsm-team-banger.mp3')
 # Game Window
 info = pygame.display.Info()
 screen_width,screen_height = info.current_w,info.current_h
@@ -139,6 +140,14 @@ class Player(MovingCharacter):
             self.shoot_cooldown = SHOOT_COOLDOWN
             pygame.mixer.Sound.play(pistol_empty_sound)
 
+    def is_collided_with_ammo(self, collidable):
+        collision_list = pygame.sprite.spritecollide(self, collidable, False)
+        for collided_object in collision_list:
+            if isinstance(collided_object, Ammunition):
+                self.rounds += 1
+                collided_object.kill()
+                collidable.remove(collided_object)
+
     def set_position(self, x, y):
         dx = self.rect.x - x
         dy = self.rect.y - y
@@ -150,6 +159,7 @@ class Player(MovingCharacter):
     def update(self, collidable = pygame.sprite.Group(), counter = 0):
         self.player_rotation()
         self.player_input()
+        self.is_collided_with_ammo(ammunition_group)
         self.move(collidable)
         if counter <= 0:
             self.kill()
@@ -290,9 +300,25 @@ class Wall(pygame.sprite.Sprite):
     def draw(self, window):
         window.blit(self.image, (self.rect.x, self.rect.y))
 
+class Ammunition(pygame.sprite.Sprite):
+    def __init__(self, x, y, width=128, height=128):
+        super().__init__()
+        self.image = pygame.image.load('Images/ammo-pistol 32px.png').convert_alpha()
+        self.image = pygame.transform.rotozoom(self.image, 0, 2)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+    def shift_world(self, shift_x, shift_y):
+        self.rect.x += shift_x
+        self.rect.y += shift_y
+
+    def draw(self, window):
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
 def create_instances():
     global current_level, running, player, player_group
-    global all_sprites_group, bullet_group, walls_group, enemies_group
+    global all_sprites_group, bullet_group, walls_group, enemies_group, ammunition_group
 
     global player
     player = Player()
@@ -309,6 +335,7 @@ def create_instances():
 
     walls_group = pygame.sprite.Group()
     enemies_group = pygame.sprite.Group()
+    ammunition_group = pygame.sprite.Group()
 
 def run_viewbox(player_x, player_y):
     left_viewbox = window_width/2 - window_width/8
@@ -339,6 +366,8 @@ def run_viewbox(player_x, player_y):
             wall.shift_world(dx, dy)
         for enemy in enemies_group:
             enemy.shift_world(dx, dy)
+        for ammunition in ammunition_group:
+            ammunition.shift_world(dx, dy)
 
 def setup_maze(current_level):
     for y in range(len(levels[current_level])):
@@ -355,6 +384,8 @@ def setup_maze(current_level):
             elif character == 'E':
                 enemies_group.add(Enemy(pos_x, pos_y))
                 logging.warning(len(enemies_group))
+            elif character == 'A':
+                ammunition_group.add(Ammunition(pos_x, pos_y))
 
 
 
@@ -362,9 +393,10 @@ def setup_maze(current_level):
 def main():
     loading = True
     isGameOver = False
-    counter = 60
+    counter = 100
     create_instances()
     setup_maze(current_level)
+    pygame.mixer.music.play(-1)
 
     running = True
 
@@ -382,12 +414,13 @@ def main():
         for wall in walls_group:
             if (wall.rect.x < window_width) and (wall.rect.y < window_height):
                 wall.draw(window)
+        ammunition_group.draw(window)
         player_group.draw(window)
         enemies_group.draw(window)
         bullet_group.draw(window)
 
         time_surface = font.render("Time: " + str(counter), True, (255,255,255))
-        window.blit(time_surface, (0,100))
+        window.blit(time_surface, (20,120))
 
 
         keys = pygame.key.get_pressed()
@@ -401,17 +434,21 @@ def main():
         if counter < 1:
             window.blit(timesup_text_surface, (winScreen_x, winScreen_y))
 
+        if keys[pygame.K_v]:
+            Player.score = 0
+            main()
+
         if len(enemies_group) <= 0:
             window.blit(win_text_surface, (winScreen_x, winScreen_y))
         if player.health == 0:
             window.blit(gameover_text_surface, (winScreen_x, winScreen_y))
         enemiesRemaining = len(enemies_group)
         enemiesRemaining_surface = font.render("Enemies Remaining: " + str(enemiesRemaining), True, (255, 0, 0))
-        window.blit(enemiesRemaining_surface, (0,0))
+        window.blit(enemiesRemaining_surface, (20,20))
         ammo_surface = font.render("Ammo " + str(player.ammo) + "/" + str(player.rounds), True, (255,255,255))
         window.blit(ammo_surface, (20,1300))
         score_surface = font.render("Score: " + str(player.score), True, (0, 255, 0))
-        window.blit(score_surface, (0,50))
+        window.blit(score_surface, (20,70))
 
         # pygame.draw.rect(window, 'red', player.hitbox_rect, width=2)
         # pygame.draw.rect(window, 'yellow', player.rect, width=2)
