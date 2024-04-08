@@ -76,6 +76,8 @@ class Player(MovingCharacter):
     score = 0
     ammo = 8
     rounds = 4
+    key = 0
+    exit = 0
     def __init__(self):
         super().__init__()
         self.image = pygame.transform.rotozoom(pygame.image.load('Images/player1.png').convert_alpha(), 0, 0.8)
@@ -148,6 +150,22 @@ class Player(MovingCharacter):
                 collided_object.kill()
                 collidable.remove(collided_object)
 
+    def is_collided_with_key(self, collidable):
+        collision_list = pygame.sprite.spritecollide(self, collidable, False)
+        for collided_object in collision_list:
+            if isinstance(collided_object, Key):
+                self.key += 1
+                collided_object.kill()
+                collidable.remove(collided_object)
+
+    def is_collided_with_door(self, collidable):
+        collision_list = pygame.sprite.spritecollide(self, collidable, False)
+        for collided_object in collision_list:
+            if isinstance(collided_object, Door):
+                if self.key == 1:
+                    self.exit = 1
+
+
     def set_position(self, x, y):
         dx = self.rect.x - x
         dy = self.rect.y - y
@@ -160,6 +178,8 @@ class Player(MovingCharacter):
         self.player_rotation()
         self.player_input()
         self.is_collided_with_ammo(ammunition_group)
+        self.is_collided_with_key(key_group)
+        self.is_collided_with_door(door_group)
         self.move(collidable)
         if counter <= 0:
             self.kill()
@@ -271,7 +291,7 @@ class Bullet(pygame.sprite.Sprite):
                 if collided_object.health <= 0:
                     collided_object.kill()
                     collidable.remove(collided_object)
-                    Player.score += 100
+                    Player.score += 50
             self.kill()
 
     def update(self, collidable = pygame.sprite.Group()):
@@ -316,9 +336,75 @@ class Ammunition(pygame.sprite.Sprite):
     def draw(self, window):
         window.blit(self.image, (self.rect.x, self.rect.y))
 
+class Fake_Wall(pygame.sprite.Sprite):
+
+    def __init__(self, x, y, width=128, height=128):
+        super().__init__()
+        self.image = pygame.image.load('images/Wall.png').convert_alpha()
+        self.image = pygame.transform.rotozoom(self.image, 0, 2)
+
+        # self.image = pygame.Surface((width, height))
+        # self.image.fill((255,100,180))
+
+        self.rect = self.image.get_rect()
+
+        self.rect.x = x
+        self.rect.y = y
+
+    def shift_world(self, shift_x, shift_y):
+        self.rect.x += shift_x
+        self.rect.y += shift_y
+
+    def draw(self, window):
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
+class Door(pygame.sprite.Sprite):
+
+    def __init__(self, x, y, width=128, height=128):
+        super().__init__()
+        self.image = pygame.image.load('images/silverdoor.jpg').convert_alpha()
+        self.image = pygame.transform.rotozoom(self.image, 0, 0.5)
+
+        # self.image = pygame.Surface((width, height))
+        # self.image.fill((255,100,180))
+
+        self.rect = self.image.get_rect()
+
+        self.rect.x = x
+        self.rect.y = y
+
+    def shift_world(self, shift_x, shift_y):
+        self.rect.x += shift_x
+        self.rect.y += shift_y
+
+    def draw(self, window):
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
+class Key(pygame.sprite.Sprite):
+
+    def __init__(self, x, y, width=128, height=128):
+        super().__init__()
+        self.image = pygame.image.load('images/key_big.png').convert_alpha()
+        self.image = pygame.transform.rotozoom(self.image, 0, 2)
+
+        # self.image = pygame.Surface((width, height))
+        # self.image.fill((255,100,180))
+
+        self.rect = self.image.get_rect()
+
+        self.rect.x = x
+        self.rect.y = y
+
+    def shift_world(self, shift_x, shift_y):
+        self.rect.x += shift_x
+        self.rect.y += shift_y
+
+    def draw(self, window):
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
 def create_instances():
-    global current_level, running, player, player_group
-    global all_sprites_group, bullet_group, walls_group, enemies_group, ammunition_group
+    global current_level, running, player, player_group, enemies_group
+    global all_sprites_group, bullet_group, walls_group, ammunition_group, fake_wall_group, door_group, key_group
 
     global player
     player = Player()
@@ -336,6 +422,9 @@ def create_instances():
     walls_group = pygame.sprite.Group()
     enemies_group = pygame.sprite.Group()
     ammunition_group = pygame.sprite.Group()
+    fake_wall_group = pygame.sprite.Group()
+    door_group = pygame.sprite.Group()
+    key_group = pygame.sprite.Group()
 
 def run_viewbox(player_x, player_y):
     left_viewbox = window_width/2 - window_width/8
@@ -368,6 +457,12 @@ def run_viewbox(player_x, player_y):
             enemy.shift_world(dx, dy)
         for ammunition in ammunition_group:
             ammunition.shift_world(dx, dy)
+        for fake_wall in fake_wall_group:
+            fake_wall.shift_world(dx, dy)
+        for door in door_group:
+            door.shift_world(dx, dy)
+        for key in key_group:
+            key.shift_world(dx, dy)
 
 def setup_maze(current_level):
     for y in range(len(levels[current_level])):
@@ -381,11 +476,17 @@ def setup_maze(current_level):
                 walls_group.add(Wall(pos_x, pos_y))
             elif character == "P":
                 player.set_position(pos_x, pos_y)
-            elif character == 'E':
+            elif character == "E":
                 enemies_group.add(Enemy(pos_x, pos_y))
                 logging.warning(len(enemies_group))
-            elif character == 'A':
+            elif character == "A":
                 ammunition_group.add(Ammunition(pos_x, pos_y))
+            elif character == "O":
+                fake_wall_group.add(Fake_Wall(pos_x, pos_y))
+            elif character == "D":
+                door_group.add(Door(pos_x, pos_y))
+            elif character == "K":
+                key_group.add(Key(pos_x, pos_y))
 
 
 
@@ -415,9 +516,12 @@ def main():
             if (wall.rect.x < window_width) and (wall.rect.y < window_height):
                 wall.draw(window)
         ammunition_group.draw(window)
+        key_group.draw(window)
+        door_group.draw(window)
         player_group.draw(window)
         enemies_group.draw(window)
         bullet_group.draw(window)
+        fake_wall_group.draw(window)
 
         time_surface = font.render("Time: " + str(counter), True, (255,255,255))
         window.blit(time_surface, (20,20))
@@ -430,15 +534,18 @@ def main():
                 exit()
             if event.type == pygame.USEREVENT:
                 if counter > 0 and player.health != 0:
-                   counter -= 1
+                    if player.exit == 0:
+                        counter -= 1
         if counter < 1:
             window.blit(timesup_text_surface, (winScreen_x, winScreen_y))
 
         if keys[pygame.K_v]:
             Player.score = 0
+            Player.key = 0
+            Player.exit = 0
             main()
 
-        if len(enemies_group) <= 0:
+        if player.exit > 0:
             window.blit(win_text_surface, (winScreen_x, winScreen_y))
         if player.health == 0:
             window.blit(gameover_text_surface, (winScreen_x, winScreen_y))
