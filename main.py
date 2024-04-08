@@ -30,6 +30,8 @@ winScreen_x = (window_width - winScreen_width)//2
 winScreen_y = (window_height - winScreen_height)//2
 # Loads Music
 pistol_shot_sound = pygame.mixer.Sound("Sounds/Pistol_Firing.wav")
+pistol_reload_sound = pygame.mixer.Sound("Sounds/Gun Reload sound effect.mp3")
+pistol_empty_sound = pygame.mixer.Sound("Sounds/Empty gun shot.mp3")
 
 
 class MovingCharacter(pygame.sprite.Sprite):
@@ -112,10 +114,11 @@ class Player(MovingCharacter):
             self.velocity_x /= math.sqrt(2)
             self.velocity_y /= math.sqrt(2)
 
-        if keys[pygame.K_r] and self.ammo == 0:
-            if self.rounds > 0:
+        if keys[pygame.K_r]:
+            if self.rounds > 0 and self.ammo == 0:
                 self.ammo += 8
                 self.rounds -= 1
+                pygame.mixer.Sound.play(pistol_reload_sound)
 
         if pygame.mouse.get_pressed() == (1, 0, 0) or keys[pygame.K_SPACE]:
             self.shoot = True
@@ -132,6 +135,9 @@ class Player(MovingCharacter):
             self.ammo -= 1
             pygame.mixer.Sound.play(pistol_shot_sound)
             # player_group.add(self.bullet)
+        elif self.shoot_cooldown == 0 and self.ammo == 0:
+            self.shoot_cooldown = SHOOT_COOLDOWN
+            pygame.mixer.Sound.play(pistol_empty_sound)
 
     def set_position(self, x, y):
         dx = self.rect.x - x
