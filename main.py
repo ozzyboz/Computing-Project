@@ -71,6 +71,8 @@ class MovingCharacter(pygame.sprite.Sprite):
 
 class Player(MovingCharacter):
     score = 0
+    ammo = 8
+    rounds = 4
     def __init__(self):
         super().__init__()
         self.image = pygame.transform.rotozoom(pygame.image.load('Images/player1.png').convert_alpha(), 0, 0.8)
@@ -110,6 +112,11 @@ class Player(MovingCharacter):
             self.velocity_x /= math.sqrt(2)
             self.velocity_y /= math.sqrt(2)
 
+        if keys[pygame.K_r] and self.ammo == 0:
+            if self.rounds > 0:
+                self.ammo += 8
+                self.rounds -= 1
+
         if pygame.mouse.get_pressed() == (1, 0, 0) or keys[pygame.K_SPACE]:
             self.shoot = True
             self.is_shooting()
@@ -117,11 +124,12 @@ class Player(MovingCharacter):
             self.shoot = False
 
     def is_shooting(self):
-        if self.shoot_cooldown == 0:
+        if self.shoot_cooldown == 0 and self.ammo > 0:
             self.shoot_cooldown = SHOOT_COOLDOWN
             spawn_bullet_pos = self.rect.center + self.gun_barrel_offset.rotate(self.angle)
             self.bullet = Bullet(spawn_bullet_pos[0], spawn_bullet_pos[1], self.angle)
             bullet_group.add(self.bullet)
+            self.ammo -= 1
             pygame.mixer.Sound.play(pistol_shot_sound)
             # player_group.add(self.bullet)
 
@@ -392,9 +400,11 @@ def main():
         if player.health == 0:
             window.blit(gameover_text_surface, (winScreen_x, winScreen_y))
         enemiesRemaining = len(enemies_group)
-        enemiesRemaining_surface = font.render("Enemies Remaining: " + str(enemiesRemaining), True, (255, 255, 255))
+        enemiesRemaining_surface = font.render("Enemies Remaining: " + str(enemiesRemaining), True, (255, 0, 0))
         window.blit(enemiesRemaining_surface, (0,0))
-        score_surface = font.render("Score: " + str(player.score), True, (255, 255, 255))
+        ammo_surface = font.render("Ammo " + str(player.ammo) + "/" + str(player.rounds), True, (255,255,255))
+        window.blit(ammo_surface, (20,1300))
+        score_surface = font.render("Score: " + str(player.score), True, (0, 255, 0))
         window.blit(score_surface, (0,50))
 
         # pygame.draw.rect(window, 'red', player.hitbox_rect, width=2)
