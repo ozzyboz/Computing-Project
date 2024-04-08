@@ -17,7 +17,7 @@ info = pygame.display.Info()
 screen_width,screen_height = info.current_w,info.current_h
 window_width,window_height = screen_width-10,screen_height-50
 window = pygame.display.set_mode((window_width, window_height))
-pygame.display.set_caption('Don\'t touch the Zombies!')
+pygame.display.set_caption('Zombie Squad')
 clock = pygame.time.Clock()
 pygame.time.set_timer(pygame.USEREVENT, 1000)
 pygame_icon = pygame.image.load('Images/sandstormicon.PNG')
@@ -194,15 +194,15 @@ class Enemy(MovingCharacter):
         dy = playery - self.rect.centery
         if utils.distance(playerx, playery, self.rect.centerx, self.rect.centery) < 900:
             if dx < 0:
-                self.velocity_x = -10
+                self.velocity_x = -8
             elif dx > 0:
-                self.velocity_x = 10
+                self.velocity_x = 8
             else:
                 self.velocity_x = 0
             if dy < 0:
-                self.velocity_y = -10
+                self.velocity_y = -8
             elif dy > 0:
-                self.velocity_y = 10
+                self.velocity_y = 8
             else:
                 self.velocity_y = 0
             if self.velocity_x != 0 and self.velocity_y != 0:
@@ -393,7 +393,7 @@ def setup_maze(current_level):
 def main():
     loading = True
     isGameOver = False
-    counter = 100
+    counter = 300
     create_instances()
     setup_maze(current_level)
     pygame.mixer.music.play(-1)
@@ -420,7 +420,7 @@ def main():
         bullet_group.draw(window)
 
         time_surface = font.render("Time: " + str(counter), True, (255,255,255))
-        window.blit(time_surface, (20,120))
+        window.blit(time_surface, (20,20))
 
 
         keys = pygame.key.get_pressed()
@@ -442,13 +442,13 @@ def main():
             window.blit(win_text_surface, (winScreen_x, winScreen_y))
         if player.health == 0:
             window.blit(gameover_text_surface, (winScreen_x, winScreen_y))
-        enemiesRemaining = len(enemies_group)
-        enemiesRemaining_surface = font.render("Enemies Remaining: " + str(enemiesRemaining), True, (255, 0, 0))
-        window.blit(enemiesRemaining_surface, (20,20))
+        # enemiesRemaining = len(enemies_group)
+        # enemiesRemaining_surface = font.render("Enemies Remaining: " + str(enemiesRemaining), True, (255, 0, 0))
+        # window.blit(enemiesRemaining_surface, (20,20))
         ammo_surface = font.render("Ammo " + str(player.ammo) + "/" + str(player.rounds), True, (255,255,255))
         window.blit(ammo_surface, (20,1300))
         score_surface = font.render("Score: " + str(player.score), True, (0, 255, 0))
-        window.blit(score_surface, (20,70))
+        window.blit(score_surface, (20,80))
 
         # pygame.draw.rect(window, 'red', player.hitbox_rect, width=2)
         # pygame.draw.rect(window, 'yellow', player.rect, width=2)
