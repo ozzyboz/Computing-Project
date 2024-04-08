@@ -26,6 +26,8 @@ font = pygame.font.Font(None, 72)
 gameover_text_surface = font.render("Mission Failed",True, (255,0,0))
 win_text_surface = font.render("Mission Successful", True, (0,255,0))
 timesup_text_surface = font.render("Times Up", True, (255,0,0))
+restart_text_surface = font.render("Press V to restart level.", True, (255, 0, 0))
+restartwin_text_surface = font.render("Press V to restart level.", True, (0, 255, 0))
 winScreen_width, winScreen_height = win_text_surface.get_size()
 winScreen_x = (window_width - winScreen_width)//2
 winScreen_y = (window_height - winScreen_height)//2
@@ -572,8 +574,6 @@ def main():
                 if counter > 0 and player.health != 0:
                     if player.exit == 0:
                         counter -= 1
-        if counter < 1:
-            window.blit(timesup_text_surface, (winScreen_x, winScreen_y))
 
         if keys[pygame.K_v]:
             Player.score = 0
@@ -581,10 +581,6 @@ def main():
             Player.exit = 0
             main()
 
-        if player.exit > 0:
-            window.blit(win_text_surface, (winScreen_x, winScreen_y))
-        if player.health == 0:
-            window.blit(gameover_text_surface, (winScreen_x, winScreen_y))
         # enemiesRemaining = len(enemies_group)
         # enemiesRemaining_surface = font.render("Enemies Remaining: " + str(enemiesRemaining), True, (255, 0, 0))
         # window.blit(enemiesRemaining_surface, (20,20))
@@ -592,6 +588,29 @@ def main():
         window.blit(ammo_surface, (20,1300))
         score_surface = font.render("Score: " + str(player.score), True, (0, 255, 0))
         window.blit(score_surface, (20,80))
+
+        if player.exit > 0:
+            pygame.mixer.music.stop()
+            window.fill((0, 0, 0))
+            window.blit(win_text_surface, (winScreen_x, winScreen_y))
+            window.blit(restartwin_text_surface, (winScreen_x - 50, winScreen_y + 100))
+            window.blit(score_surface, (20, 80))
+            window.blit(time_surface, (20, 20))
+        if player.health == 0:
+            pygame.mixer.music.stop()
+            window.fill((0, 0, 0))
+            window.blit(gameover_text_surface, (winScreen_x, winScreen_y))
+            window.blit(restart_text_surface, (winScreen_x - 80, winScreen_y + 100))
+            window.blit(score_surface, (20, 80))
+            window.blit(time_surface, (20, 20))
+        if counter < 1:
+            pygame.mixer.music.stop()
+            window.fill((0, 0, 0))
+            window.blit(timesup_text_surface, (winScreen_x + 100, winScreen_y))
+            window.blit(restart_text_surface, (winScreen_x - 50, winScreen_y + 100))
+            window.blit(score_surface, (20, 80))
+            window.blit(time_surface, (20, 20))
+
 
         # pygame.draw.rect(window, 'red', player.hitbox_rect, width=2)
         # pygame.draw.rect(window, 'yellow', player.rect, width=2)
