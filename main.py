@@ -7,6 +7,7 @@ import math
 import utils
 from settings import *
 from levels import levels
+from random import randint
 import logging
 
 #comment
@@ -320,6 +321,9 @@ class Bullet(pygame.sprite.Sprite):
             if isinstance(collided_object, Enemy):
                 collided_object.health -= 15
                 if collided_object.health <= 0:
+                    dropitem = randint(1,5)
+                    if dropitem == 5:
+                        ammunition_group.add(Ammunition(collided_object.rect.x, collided_object.rect.y))
                     collided_object.kill()
                     collidable.remove(collided_object)
                     Player.score += 50
