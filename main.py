@@ -179,7 +179,7 @@ class Player(MovingCharacter):
         collision_list = pygame.sprite.spritecollide(self, collidable, False)
         for collided_object in collision_list:
             if isinstance(collided_object, Treasure):
-                self.score += 250
+                Player.score += 250
                 collided_object.kill()
                 collidable.remove(collided_object)
 
@@ -213,7 +213,7 @@ class Enemy(MovingCharacter):
         self.original_enemy_image = self.image
         self.hitbox_rect = self.image.get_rect(x=pos_x, y=pos_y)
         self.rect = self.hitbox_rect.copy()
-        self.health = 50
+        self.health = randint(30,60)
         self.rect.x = pos_x
         self.rect.y = pos_y
 
@@ -319,7 +319,7 @@ class Bullet(pygame.sprite.Sprite):
         for collided_object in collision_list:
             # Checks if Collided object is an Enemy
             if isinstance(collided_object, Enemy):
-                collided_object.health -= 15
+                collided_object.health -= randint(10, 20)
                 if collided_object.health <= 0:
                     dropitem = randint(1,5)
                     if dropitem == 5:
@@ -616,7 +616,7 @@ def main():
         # enemiesRemaining_surface = font.render("Enemies Remaining: " + str(enemiesRemaining), True, (255, 0, 0))
         # window.blit(enemiesRemaining_surface, (20,20))
         ammo_surface = font.render("Ammo " + str(player.ammo) + "/" + str(player.rounds * 8), True, (255,255,255))
-        window.blit(ammo_surface, (20,1300))
+        window.blit(ammo_surface, (2200,1250))
         score_surface = font.render("Score: " + str(player.score), True, (0, 255, 0))
         window.blit(score_surface, (20,80))
 
