@@ -321,9 +321,10 @@ class Bullet(pygame.sprite.Sprite):
             if isinstance(collided_object, Enemy):
                 collided_object.health -= randint(10, 20)
                 if collided_object.health <= 0:
-                    dropitem = randint(1,5)
-                    if dropitem == 5:
+                    if randint(1, 4) == 4:
                         ammunition_group.add(Ammunition(collided_object.rect.x, collided_object.rect.y))
+                    elif randint(1, 10) == 10:
+                        treasure_group.add(Treasure(collided_object.rect.x, collided_object.rect.y))
                     collided_object.kill()
                     collidable.remove(collided_object)
                     Player.score += 50
