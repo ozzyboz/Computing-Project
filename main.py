@@ -321,7 +321,7 @@ class Bullet(pygame.sprite.Sprite):
             if isinstance(collided_object, Enemy):
                 collided_object.health -= randint(10, 20)
                 if collided_object.health <= 0:
-                    if randint(1, 4) == 4:
+                    if randint(1, 3) == 3:
                         ammunition_group.add(Ammunition(collided_object.rect.x, collided_object.rect.y))
                     elif randint(1, 10) == 10:
                         treasure_group.add(Treasure(collided_object.rect.x, collided_object.rect.y))
