@@ -18,10 +18,12 @@ screen_width,screen_height = info.current_w,info.current_h
 window_width,window_height = screen_width-10,screen_height-50
 window = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption('Zombie Squad')
+# Clock for Timer
 clock = pygame.time.Clock()
 pygame.time.set_timer(pygame.USEREVENT, 1000)
 pygame_icon = pygame.image.load('Images/sandstormicon.PNG')
 pygame.display.set_icon(pygame_icon)
+# Endgame Text
 font = pygame.font.Font(None, 72)
 gameover_text_surface = font.render("Mission Failed",True, (255,0,0))
 win_text_surface = font.render("Mission Successful", True, (0,255,0))
@@ -44,6 +46,7 @@ class MovingCharacter(pygame.sprite.Sprite):
         self.velocity_y = 0
 
     def move(self, walls):
+        # Adjusts the position by the velocity
         self.is_collided_with_wall(walls)
         self.rect.x += self.velocity_x
         self.rect.y += self.velocity_y
@@ -93,6 +96,7 @@ class Player(MovingCharacter):
         self.gun_barrel_offset = pygame.math.Vector2(GUN_OFFSET_X, GUN_OFFSET_Y)
 
     def player_rotation(self):
+        # Player faces mouse cursor
         self.mouse_coords = pygame.mouse.get_pos()
         self.x_change_mouse_player = (self.mouse_coords[0] - self.hitbox_rect.centerx)
         self.y_change_mouse_player = (self.mouse_coords[1] - self.hitbox_rect.centery)
@@ -103,22 +107,25 @@ class Player(MovingCharacter):
     def player_input(self):
         self.velocity_x = 0
         self.velocity_y = 0
-
+        # Player Movement
         keys = pygame.key.get_pressed()
-
+        # Moving Up
         if keys[pygame.K_w]:
             self.velocity_y = -self.speed
+        # Moving Down
         if keys[pygame.K_s]:
             self.velocity_y = self.speed
+        # Moving Left
         if keys[pygame.K_a]:
             self.velocity_x = -self.speed
+        # Moving Right
         if keys[pygame.K_d]:
             self.velocity_x = self.speed
         # Moving Diagonally
         if self.velocity_x != 0 and self.velocity_y != 0:
             self.velocity_x /= math.sqrt(2)
             self.velocity_y /= math.sqrt(2)
-
+        # Reload
         if keys[pygame.K_r]:
             if self.rounds > 0 and self.ammo == 0:
                 self.ammo += 8
@@ -176,6 +183,7 @@ class Player(MovingCharacter):
                 collidable.remove(collided_object)
 
     def set_position(self, x, y):
+        # Sets Player Position
         dx = self.rect.x - x
         dy = self.rect.y - y
         self.rect.x = x
@@ -184,6 +192,7 @@ class Player(MovingCharacter):
         self.hitbox_rect.y -= dy
 
     def update(self, collidable = pygame.sprite.Group(), counter = 0):
+        # Runs all player functions
         self.player_rotation()
         self.player_input()
         self.is_collided_with_ammo(ammunition_group)
@@ -208,16 +217,21 @@ class Enemy(MovingCharacter):
         self.rect.y = pos_y
 
     def enemy_rotation(self):
+        # Enemy Faces Player
         player_x = player.rect.centerx
         player_y = player.rect.centery
+        # Works out distance from player
         x_change_player = (player_x - self.rect.centerx)
         y_change_player = (player_y - self.rect.centery)
+        # Works out angle to face player
         angle = math.degrees(math.atan2(y_change_player, x_change_player))
+        # Sets image to face player
         self.image = pygame.transform.rotate(self.original_enemy_image, -angle)
         self.hitbox_rect = self.image.get_rect(center=self.rect.center)
         self.rect = self.hitbox_rect.copy()
 
     def move(self, wall_group):
+        # Enemy Hunts Player
         playerx = player.rect.centerx
         playery = player.rect.centery
         dx = playerx - self.rect.centerx
@@ -235,6 +249,7 @@ class Enemy(MovingCharacter):
                 self.velocity_y = 8
             else:
                 self.velocity_y = 0
+            # Moving Diagonally
             if self.velocity_x != 0 and self.velocity_y != 0:
                 self.velocity_x /= math.sqrt(2)
                 self.velocity_y /= math.sqrt(2)
@@ -278,24 +293,30 @@ class Bullet(pygame.sprite.Sprite):
         self.spawn_time = pygame.time.get_ticks()  # gets the time that the bullet was created
 
     def update_angle(self, new_angle):
+        # Angle of bullet is taken from Player Class
         self.angle = new_angle
+        # X and Y velocity worked out from angle
         self.x_vel = math.cos(self.angle * (2 * math.pi / 360)) * self.speed
         self.y_vel = math.sin(self.angle * (2 * math.pi / 360)) * self.speed
 
     def bullet_movement(self, collidable):
+        # Runs the function to check if the bullet has collided
         self.isCollided(collidable)
+        # Bullet movement changed by velocity
         self.x += self.x_vel
         self.y += self.y_vel
 
         self.rect.x = int(self.x)
         self.rect.y = int(self.y)
-
+        # Bullet destroyed once on screen too long
         if pygame.time.get_ticks() - self.spawn_time > self.bullet_lifetime:
             self.kill()
 
     def isCollided(self, collidable):
+        # Gets group for the collided object
         collision_list = pygame.sprite.spritecollide(self, collidable, False)
         for collided_object in collision_list:
+            # Checks if Collided object is an Enemy
             if isinstance(collided_object, Enemy):
                 collided_object.health -= 15
                 if collided_object.health <= 0:
@@ -435,6 +456,7 @@ class Treasure(pygame.sprite.Sprite):
         window.blit(self.image, (self.rect.x, self.rect.y))
 
 def create_instances():
+    # Makes global variables for entities
     global all_sprites_group, current_level, running, player, player_group, enemies_group
     global bullet_group, walls_group, ammunition_group, fake_wall_group, door_group, key_group, treasure_group
 
@@ -450,7 +472,7 @@ def create_instances():
     current_level = 0
     # running = True
 
-
+    # Creates empty groups
     walls_group = pygame.sprite.Group()
     enemies_group = pygame.sprite.Group()
     ammunition_group = pygame.sprite.Group()
@@ -460,12 +482,13 @@ def create_instances():
     treasure_group = pygame.sprite.Group()
 
 def run_viewbox(player_x, player_y):
+    # Divides the screen into four sections
     left_viewbox = window_width/2 - window_width/8
     right_viewbox = window_width/2 - window_width/16
     top_viewbox = window_height/2 - window_height/8
     bottom_viewbox = window_height/2 - window_height/16
     dx, dy = 0, 0
-
+    # Checks which section the player is in
     if(player_x <= left_viewbox):
         dx = left_viewbox - player_x
         # logging.warning(f'dx {dx} left_viewbox {left_viewbox} playerx {player_x}')
@@ -482,7 +505,7 @@ def run_viewbox(player_x, player_y):
     elif(player_y >= bottom_viewbox):
         dy = bottom_viewbox - player_y
         player.set_position(player.rect.x, bottom_viewbox)
-
+    # Shifts all entities
     if (dx != 0 or dy != 0):
         for wall in walls_group:
             wall.shift_world(dx, dy)
@@ -500,9 +523,13 @@ def run_viewbox(player_x, player_y):
             treasure.shift_world(dx, dy)
 
 def setup_maze(current_level):
+    # Repeats for the height of the map [50]
     for y in range(len(levels[current_level])):
+        # Repeats for the width of the map [50]
         for x in range(len(levels[current_level][y])):
+            # Checks the current character in the list
             character = levels[current_level][y][x]
+            # Changes the position of the character in the list to an in game coordinate
             pos_x = (x * 128)
             pos_y = (y * 128)
 
@@ -584,7 +611,7 @@ def main():
         # enemiesRemaining = len(enemies_group)
         # enemiesRemaining_surface = font.render("Enemies Remaining: " + str(enemiesRemaining), True, (255, 0, 0))
         # window.blit(enemiesRemaining_surface, (20,20))
-        ammo_surface = font.render("Ammo " + str(player.ammo) + "/" + str(player.rounds), True, (255,255,255))
+        ammo_surface = font.render("Ammo " + str(player.ammo) + "/" + str(player.rounds * 8), True, (255,255,255))
         window.blit(ammo_surface, (20,1300))
         score_surface = font.render("Score: " + str(player.score), True, (0, 255, 0))
         window.blit(score_surface, (20,80))
