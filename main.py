@@ -455,12 +455,7 @@ class Treasure(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.image.load('images/GoldTrophy.png').convert_alpha()
         self.image = pygame.transform.rotozoom(self.image, 0, 2)
-
-        # self.image = pygame.Surface((width, height))
-        # self.image.fill((255,100,180))
-
         self.rect = self.image.get_rect()
-
         self.rect.x = x
         self.rect.y = y
 
@@ -594,7 +589,7 @@ def setup_maze(current_level):
                 # Set treasure spawn position
                 treasure_group.add(Treasure(pos_x, pos_y))
             elif character == "H":
-                # Set Health Pack spawn position
+                # Set health pack spawn position
                 health_pack_group.add(Health_Pack(pos_x, pos_y))
 
 def main():
