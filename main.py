@@ -38,7 +38,9 @@ winScreen_y = (window_height - winScreen_height)//2
 pistol_shot_sound = pygame.mixer.Sound("Sounds/Pistol_Firing.wav")
 pistol_reload_sound = pygame.mixer.Sound("Sounds/Gun Reload sound effect.mp3")
 pistol_empty_sound = pygame.mixer.Sound("Sounds/Empty gun shot.mp3")
-
+# Loads Heart Symbols
+heart_symbol = pygame.transform.rotozoom(pygame.image.load('Images/glossyheart.png').convert_alpha(), 0, 2)
+empty_heart = pygame.transform.rotozoom(pygame.image.load('Images/emptyheart.png').convert_alpha(), 0, 2)
 
 class MovingCharacter(pygame.sprite.Sprite):
     def __init__(self):
@@ -84,6 +86,7 @@ class Player(MovingCharacter):
     rounds = 4
     key = 0
     exit = 0
+    health = 100
     def __init__(self):
         super().__init__()
         self.image = pygame.transform.rotozoom(pygame.image.load('Images/player1.png').convert_alpha(), 0, 0.8)
@@ -91,7 +94,6 @@ class Player(MovingCharacter):
         self.hitbox_rect = self.base_player_image.get_rect()
         self.rect = self.hitbox_rect.copy()
         self.speed = PLAYER_SPEED
-        self.health = 100
         self.shoot = False
         self.shoot_cooldown = 0
         self.gun_barrel_offset = pygame.math.Vector2(GUN_OFFSET_X, GUN_OFFSET_Y)
@@ -214,6 +216,7 @@ class Enemy(MovingCharacter):
         self.hitbox_rect = self.image.get_rect(x=pos_x, y=pos_y)
         self.rect = self.hitbox_rect.copy()
         self.health = randint(30,60)
+        self.damage_cooldown = 0
         self.rect.x = pos_x
         self.rect.y = pos_y
 
@@ -261,11 +264,13 @@ class Enemy(MovingCharacter):
         for collided_object in collision_list:
             if isinstance(collided_object, Player):
                 if utils.distance(collided_object.rect.x, collided_object.rect.y, self.rect.x, self.rect.y) < self.rect.width//2:
-                    # game over
-                    player.health = 0
-                    collided_object.kill()
-                    collidable.remove(collided_object)
-                    self.kill()
+                    if self.damage_cooldown == 0:
+                        self.damage_cooldown = 20
+                        Player.health -= 25
+                        if collided_object.health == 0:
+                            collided_object.kill()
+                            collidable.remove(collided_object)
+                            self.kill()
 
     def shift_world(self, shift_x, shift_y):
         self.rect.x += shift_x
@@ -275,6 +280,8 @@ class Enemy(MovingCharacter):
         self.is_collided_with_player(player_group)
         self.enemy_rotation()
         self.move(walls_group)
+        if self.damage_cooldown > 0:
+            self.damage_cooldown -= 1
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -621,12 +628,35 @@ def main():
         score_surface = font.render("Score: " + str(player.score), True, (0, 255, 0))
         window.blit(score_surface, (20,80))
 
+        if Player.health == 100:
+            window.blit(heart_symbol, (2200, 20))
+            window.blit(heart_symbol, (2275, 20))
+            window.blit(heart_symbol, (2350, 20))
+            window.blit(heart_symbol, (2425, 20))
+        if Player.health <= 75:
+            window.blit(heart_symbol, (2200, 20))
+            window.blit(heart_symbol, (2275, 20))
+            window.blit(heart_symbol, (2350, 20))
+            window.blit(empty_heart, (2425, 20))
+        if Player.health <= 50:
+            window.blit(heart_symbol, (2200, 20))
+            window.blit(heart_symbol, (2275, 20))
+            window.blit(empty_heart, (2350, 20))
+            window.blit(empty_heart, (2425, 20))
+        if Player.health <= 25:
+            window.blit(heart_symbol, (2200, 20))
+            window.blit(empty_heart, (2275, 20))
+            window.blit(empty_heart, (2350, 20))
+            window.blit(empty_heart, (2425, 20))
+
+
         if player.exit > 0:
             pygame.mixer.music.stop()
             window.fill((0, 0, 0))
             window.blit(win_text_surface, (winScreen_x, winScreen_y))
             window.blit(restartwin_text_surface, (winScreen_x - 50, winScreen_y + 100))
             window.blit(score_surface, (20, 80))
+            player.score = player.score * counter
             window.blit(time_surface, (20, 20))
         if player.health == 0:
             pygame.mixer.music.stop()
