@@ -126,8 +126,8 @@ class Player(MovingCharacter):
             self.velocity_x = self.speed
         # Moving Diagonally
         if self.velocity_x != 0 and self.velocity_y != 0:
-            self.velocity_x /= math.sqrt(2)
-            self.velocity_y /= math.sqrt(2)
+            self.velocity_x /= 1.385
+            self.velocity_y /= 1.385
         # Reload
         if keys[pygame.K_r]:
             if self.rounds > 0 and self.ammo == 0:
@@ -242,32 +242,36 @@ class Enemy(MovingCharacter):
         dy = playery - self.rect.centery
         if utils.distance(playerx, playery, self.rect.centerx, self.rect.centery) < 900:
             if dx < 0:
-                self.velocity_x = -8
+                self.velocity_x = -13
             elif dx > 0:
-                self.velocity_x = 8
+                self.velocity_x = 13
             else:
                 self.velocity_x = 0
             if dy < 0:
-                self.velocity_y = -8
+                self.velocity_y = -13
             elif dy > 0:
-                self.velocity_y = 8
+                self.velocity_y = 13
             else:
                 self.velocity_y = 0
             # Moving Diagonally
             if self.velocity_x != 0 and self.velocity_y != 0:
-                self.velocity_x /= math.sqrt(2)
-                self.velocity_y /= math.sqrt(2)
+                self.velocity_x /= 1.385
+                self.velocity_y /= 1.385
         super().move(wall_group)
 
     def is_collided_with_player(self, collidable):
         collision_list = pygame.sprite.spritecollide(self, collidable, False)
         for collided_object in collision_list:
+            # Checks if collided with player
             if isinstance(collided_object, Player):
+                # Checks if enemy is close enough to player to inflict damage
                 if utils.distance(collided_object.rect.x, collided_object.rect.y, self.rect.x, self.rect.y) < self.rect.width//2:
+                    # Cooldown to prevent instant death
                     if self.damage_cooldown == 0:
-                        self.damage_cooldown = 20
+                        self.damage_cooldown = 30
                         Player.health -= 25
                         if collided_object.health == 0:
+                            # Game Over
                             collided_object.kill()
                             collidable.remove(collided_object)
                             self.kill()
@@ -407,12 +411,7 @@ class Door(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.image.load('images/silverdoor.jpg').convert_alpha()
         self.image = pygame.transform.rotozoom(self.image, 0, 0.5)
-
-        # self.image = pygame.Surface((width, height))
-        # self.image.fill((255,100,180))
-
         self.rect = self.image.get_rect()
-
         self.rect.x = x
         self.rect.y = y
 
@@ -429,12 +428,7 @@ class Key(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.image.load('images/key_big.png').convert_alpha()
         self.image = pygame.transform.rotozoom(self.image, 0, 2)
-
-        # self.image = pygame.Surface((width, height))
-        # self.image.fill((255,100,180))
-
         self.rect = self.image.get_rect()
-
         self.rect.x = x
         self.rect.y = y
 
@@ -573,7 +567,6 @@ def main():
     counter = 300
     create_instances()
     setup_maze(current_level)
-    pygame.mixer.music.play(-1)
 
     running = True
 
@@ -618,6 +611,7 @@ def main():
             Player.score = 0
             Player.key = 0
             Player.exit = 0
+            Player.health = 100
             main()
 
         # enemiesRemaining = len(enemies_group)
@@ -650,15 +644,16 @@ def main():
             window.blit(empty_heart, (2425, 20))
 
 
-        if player.exit > 0:
+        if player.exit == 1:
+            # Player Wins
             pygame.mixer.music.stop()
             window.fill((0, 0, 0))
             window.blit(win_text_surface, (winScreen_x, winScreen_y))
             window.blit(restartwin_text_surface, (winScreen_x - 50, winScreen_y + 100))
             window.blit(score_surface, (20, 80))
-            player.score = player.score * counter
             window.blit(time_surface, (20, 20))
-        if player.health == 0:
+        if player.health <= 0:
+            # Player is Dead
             pygame.mixer.music.stop()
             window.fill((0, 0, 0))
             window.blit(gameover_text_surface, (winScreen_x, winScreen_y))
@@ -666,6 +661,7 @@ def main():
             window.blit(score_surface, (20, 80))
             window.blit(time_surface, (20, 20))
         if counter < 1:
+            # Player has run out of time
             pygame.mixer.music.stop()
             window.fill((0, 0, 0))
             window.blit(timesup_text_surface, (winScreen_x + 100, winScreen_y))
