@@ -543,19 +543,26 @@ def setup_maze(current_level):
                 # Update wall coordinates
                 walls_group.add(Wall(pos_x, pos_y))
             elif character == "P":
+                # Set player spawn position
                 player.set_position(pos_x, pos_y)
             elif character == "E":
+                # Set enemy spawn position
                 enemies_group.add(Enemy(pos_x, pos_y))
                 logging.warning(len(enemies_group))
             elif character == "A":
+                # Set ammunition spawn position
                 ammunition_group.add(Ammunition(pos_x, pos_y))
             elif character == "O":
+                # Set fake wall spawn position
                 fake_wall_group.add(Fake_Wall(pos_x, pos_y))
             elif character == "D":
+                # Set door spawn position
                 door_group.add(Door(pos_x, pos_y))
             elif character == "K":
+                # Set key spawn position
                 key_group.add(Key(pos_x, pos_y))
             elif character == "T":
+                # Set treasure spawn position
                 treasure_group.add(Treasure(pos_x, pos_y))
 
 
