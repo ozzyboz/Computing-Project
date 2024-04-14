@@ -185,6 +185,15 @@ class Player(MovingCharacter):
                 collided_object.kill()
                 collidable.remove(collided_object)
 
+    def is_collided_with_health_pack(self, collidable):
+        collision_list = pygame.sprite.spritecollide(self, collidable, False)
+        for collided_object in collision_list:
+            if isinstance(collided_object, Health_Pack):
+                if Player.health <= 75:
+                    Player.health += 25
+                    collided_object.kill()
+                    collidable.remove(collided_object)
+
     def set_position(self, x, y):
         # Sets Player Position
         dx = self.rect.x - x
@@ -202,6 +211,7 @@ class Player(MovingCharacter):
         self.is_collided_with_key(key_group)
         self.is_collided_with_door(door_group)
         self.is_collided_with_treasure(treasure_group)
+        self.is_collided_with_health_pack(health_pack_group)
         self.move(collidable)
         if counter <= 0:
             self.kill()
@@ -461,10 +471,27 @@ class Treasure(pygame.sprite.Sprite):
     def draw(self, window):
         window.blit(self.image, (self.rect.x, self.rect.y))
 
+class Health_Pack(pygame.sprite.Sprite):
+
+    def __init__(self, x, y, width=128, height=128):
+        super().__init__()
+        self.image = pygame.image.load('Images/health-green 32px.png').convert_alpha()
+        self.image = pygame.transform.rotozoom(self.image, 0, 2)
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+    def shift_world(self, shift_x, shift_y):
+        self.rect.x += shift_x
+        self.rect.y += shift_y
+
+    def draw(self, window):
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
 def create_instances():
     # Makes global variables for entities
-    global all_sprites_group, current_level, running, player, player_group, enemies_group
-    global bullet_group, walls_group, ammunition_group, fake_wall_group, door_group, key_group, treasure_group
+    global all_sprites_group, current_level, running, player, player_group, enemies_group, bullet_group
+    global walls_group, ammunition_group, fake_wall_group, door_group, key_group, treasure_group, health_pack_group
 
     global player
     player = Player()
@@ -486,6 +513,7 @@ def create_instances():
     door_group = pygame.sprite.Group()
     key_group = pygame.sprite.Group()
     treasure_group = pygame.sprite.Group()
+    health_pack_group = pygame.sprite.Group()
 
 def run_viewbox(player_x, player_y):
     # Divides the screen into four sections
@@ -527,6 +555,8 @@ def run_viewbox(player_x, player_y):
             key.shift_world(dx, dy)
         for treasure in treasure_group:
             treasure.shift_world(dx, dy)
+        for health_pack in health_pack_group:
+            health_pack.shift_world(dx, dy)
 
 def setup_maze(current_level):
     # Repeats for the height of the map [50]
@@ -548,7 +578,6 @@ def setup_maze(current_level):
             elif character == "E":
                 # Set enemy spawn position
                 enemies_group.add(Enemy(pos_x, pos_y))
-                logging.warning(len(enemies_group))
             elif character == "A":
                 # Set ammunition spawn position
                 ammunition_group.add(Ammunition(pos_x, pos_y))
@@ -564,9 +593,9 @@ def setup_maze(current_level):
             elif character == "T":
                 # Set treasure spawn position
                 treasure_group.add(Treasure(pos_x, pos_y))
-
-
-
+            elif character == "H":
+                # Set Health Pack spawn position
+                health_pack_group.add(Health_Pack(pos_x, pos_y))
 
 def main():
     loading = True
@@ -595,6 +624,7 @@ def main():
         key_group.draw(window)
         treasure_group.draw(window)
         door_group.draw(window)
+        health_pack_group.draw(window)
         player_group.draw(window)
         enemies_group.draw(window)
         bullet_group.draw(window)
