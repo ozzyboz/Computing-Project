@@ -399,12 +399,7 @@ class Fake_Wall(pygame.sprite.Sprite):
         super().__init__()
         self.image = pygame.image.load('images/Wall.png').convert_alpha()
         self.image = pygame.transform.rotozoom(self.image, 0, 2)
-
-        # self.image = pygame.Surface((width, height))
-        # self.image.fill((255,100,180))
-
         self.rect = self.image.get_rect()
-
         self.rect.x = x
         self.rect.y = y
 
@@ -600,6 +595,8 @@ def main():
     setup_maze(current_level)
 
     running = True
+
+    pygame.mixer.music.play(-1)
 
     while running:
 
