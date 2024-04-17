@@ -18,7 +18,7 @@ info = pygame.display.Info()
 screen_width,screen_height = info.current_w,info.current_h
 window_width,window_height = screen_width-10,screen_height-50
 window = pygame.display.set_mode((window_width, window_height))
-pygame.display.set_caption('Zombie Squad')
+pygame.display.set_caption('Zombie Hunter')
 # Clock for Timer
 clock = pygame.time.Clock()
 pygame.time.set_timer(pygame.USEREVENT, 1000)
